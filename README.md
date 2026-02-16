@@ -1,11 +1,4 @@
-# OpenAI Agents SDK [![PyPI](https://img.shields.io/pypi/v/openai-agents?label=pypi%20package)](https://pypi.org/project/openai-agents/)
-
-The OpenAI Agents SDK is a lightweight yet powerful framework for building multi-agent workflows. It is provider-agnostic, supporting the OpenAI Responses and Chat Completions APIs, as well as 100+ other LLMs.
-
-<img src="https://cdn.openai.com/API/docs/images/orchestration.png" alt="Image of the Agents Tracing UI" style="max-height: 803px;">
-
-> [!NOTE]
-> Looking for the JavaScript/TypeScript version? Check out [Agents SDK JS/TS](https://github.com/openai/openai-agents-js).
+# OpenAI Agents SDK
 
 ### Core concepts:
 
@@ -19,27 +12,11 @@ Explore the [examples](examples) directory to see the SDK in action, and read ou
 
 ## Get started
 
-To get started, set up your Python environment (Python 3.10 or newer required), and then install OpenAI Agents SDK package.
-
-### venv
-
-```bash
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-pip install openai-agents
-```
-
-For voice support, install with the optional `voice` group: `pip install 'openai-agents[voice]'`.
-
-For Redis session support, install with the optional `redis` group: `pip install 'openai-agents[redis]'`.
-
 ### uv
 
-If you're familiar with [uv](https://docs.astral.sh/uv/), installing the package would be even easier:
-
 ```bash
-uv init
-uv add openai-agents
+uv sync
+source .venv/bin/activate
 ```
 
 For voice support, install with the optional `voice` group: `uv add 'openai-agents[voice]'`.
@@ -60,10 +37,6 @@ print(result.final_output)
 # Functions calling themselves,
 # Infinite loop's dance.
 ```
-
-(_If running this, ensure you set the `OPENAI_API_KEY` environment variable_)
-
-(_For Jupyter notebook users, see [hello_world_jupyter.ipynb](examples/basic/hello_world_jupyter.ipynb)_)
 
 ## Handoffs example
 
@@ -320,6 +293,3 @@ We'd like to acknowledge the excellent work of the open-source community, especi
 -   [LiteLLM](https://github.com/BerriAI/litellm) (unified interface for 100+ LLMs)
 -   [MkDocs](https://github.com/squidfunk/mkdocs-material)
 -   [Griffe](https://github.com/mkdocstrings/griffe)
--   [uv](https://github.com/astral-sh/uv) and [ruff](https://github.com/astral-sh/ruff)
-
-We're committed to continuing to build the Agents SDK as an open source framework so others in the community can expand on our approach.
