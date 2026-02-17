@@ -17,7 +17,6 @@ from .traces import NoOpTrace, Trace, TraceImpl
 
 
 def _safe_debug(message: str) -> None:
-    """Best-effort debug logging that tolerates closed streams during shutdown."""
 
     def _has_closed_stream_handler(log: logging.Logger) -> bool:
         current: logging.Logger | None = log
@@ -42,19 +41,12 @@ def _safe_debug(message: str) -> None:
 
 
 class SynchronousMultiTracingProcessor(TracingProcessor):
-    """
-    Forwards all calls to a list of TracingProcessors, in order of registration.
-    """
 
     def __init__(self):
-        # Using a tuple to avoid race conditions when iterating over processors
         self._processors: tuple[TracingProcessor, ...] = ()
         self._lock = threading.Lock()
 
     def add_tracing_processor(self, tracing_processor: TracingProcessor):
-        """
-        Add a processor to the list of processors. Each processor will receive all traces/spans.
-        """
         with self._lock:
             self._processors += (tracing_processor,)
 
@@ -106,9 +98,6 @@ class SynchronousMultiTracingProcessor(TracingProcessor):
                 logger.error(f"Error in trace processor {processor} during on_span_end: {e}")
 
     def shutdown(self) -> None:
-        """
-        Called when the application stops.
-        """
         for processor in self._processors:
             _safe_debug(f"Shutting down trace processor {processor}")
             try:
@@ -196,15 +185,11 @@ class TraceProvider(ABC):
 class DefaultTraceProvider(TraceProvider):
     def __init__(self) -> None:
         self._multi_processor = SynchronousMultiTracingProcessor()
-        # Lazily read env flag on first use to honor env set after import but before first trace.
         self._env_disabled: bool | None = None
         self._manual_disabled: bool | None = None
         self._disabled = False
 
     def register_processor(self, processor: TracingProcessor):
-        """
-        Add a processor to the list of processors. Each processor will receive all traces/spans.
-        """
         self._multi_processor.add_tracing_processor(processor)
 
     def set_processors(self, processors: list[TracingProcessor]):

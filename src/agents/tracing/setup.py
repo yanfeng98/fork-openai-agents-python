@@ -31,11 +31,6 @@ def set_trace_provider(provider: TraceProvider) -> None:
 
 
 def get_trace_provider() -> TraceProvider:
-    """Get the global trace provider used by tracing utilities.
-
-    The default provider and processor are initialized lazily on first access so
-    importing the SDK does not create network clients or threading primitives.
-    """
     global GLOBAL_TRACE_PROVIDER
     global _SHUTDOWN_HANDLER_REGISTERED
 

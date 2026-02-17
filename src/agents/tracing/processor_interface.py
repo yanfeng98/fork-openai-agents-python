@@ -7,48 +7,6 @@ if TYPE_CHECKING:
 
 
 class TracingProcessor(abc.ABC):
-    """Interface for processing and monitoring traces and spans in the OpenAI Agents system.
-
-    This abstract class defines the interface that all tracing processors must implement.
-    Processors receive notifications when traces and spans start and end, allowing them
-    to collect, process, and export tracing data.
-
-    Example:
-        ```python
-        class CustomProcessor(TracingProcessor):
-            def __init__(self):
-                self.active_traces = {}
-                self.active_spans = {}
-
-            def on_trace_start(self, trace):
-                self.active_traces[trace.trace_id] = trace
-
-            def on_trace_end(self, trace):
-                # Process completed trace
-                del self.active_traces[trace.trace_id]
-
-            def on_span_start(self, span):
-                self.active_spans[span.span_id] = span
-
-            def on_span_end(self, span):
-                # Process completed span
-                del self.active_spans[span.span_id]
-
-            def shutdown(self):
-                # Clean up resources
-                self.active_traces.clear()
-                self.active_spans.clear()
-
-            def force_flush(self):
-                # Force processing of any queued items
-                pass
-        ```
-
-    Notes:
-        - All methods should be thread-safe
-        - Methods should not block for long periods
-        - Handle errors gracefully to prevent disrupting agent execution
-    """
 
     @abc.abstractmethod
     def on_trace_start(self, trace: "Trace") -> None:
@@ -130,7 +88,6 @@ class TracingProcessor(abc.ABC):
 
 
 class TracingExporter(abc.ABC):
-    """Exports traces and spans. For example, could log them or send them to a backend."""
 
     @abc.abstractmethod
     def export(self, items: list["Trace | Span[Any]"]) -> None:

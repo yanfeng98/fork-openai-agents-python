@@ -49,19 +49,6 @@ class BackendSpanExporter(TracingExporter):
         base_delay: float = 1.0,
         max_delay: float = 30.0,
     ):
-        """
-        Args:
-            api_key: The API key for the "Authorization" header. Defaults to
-                `os.environ["OPENAI_API_KEY"]` if not provided.
-            organization: The OpenAI organization to use. Defaults to
-                `os.environ["OPENAI_ORG_ID"]` if not provided.
-            project: The OpenAI project to use. Defaults to
-                `os.environ["OPENAI_PROJECT_ID"]` if not provided.
-            endpoint: The HTTP endpoint to which traces/spans are posted.
-            max_retries: Maximum number of retries upon failures.
-            base_delay: Base delay (in seconds) for the first backoff.
-            max_delay: Maximum delay (in seconds) for backoff growth.
-        """
         self._api_key = api_key
         self._organization = organization
         self._project = project
@@ -70,7 +57,6 @@ class BackendSpanExporter(TracingExporter):
         self.base_delay = base_delay
         self.max_delay = max_delay
 
-        # Keep a client open for connection pooling across multiple export calls
         self._client = httpx.Client(timeout=httpx.Timeout(timeout=60, connect=5.0))
 
     def set_api_key(self, api_key: str):
@@ -214,11 +200,6 @@ class BackendSpanExporter(TracingExporter):
 
 
 class BatchTraceProcessor(TracingProcessor):
-    """Some implementation notes:
-    1. Using Queue, which is thread-safe.
-    2. Using a background thread to export spans, to minimize any performance issues.
-    3. Spans are stored in memory until they are exported.
-    """
 
     def __init__(
         self,
@@ -228,15 +209,6 @@ class BatchTraceProcessor(TracingProcessor):
         schedule_delay: float = 5.0,
         export_trigger_ratio: float = 0.7,
     ):
-        """
-        Args:
-            exporter: The exporter to use.
-            max_queue_size: The maximum number of spans to store in the queue. After this, we will
-                start dropping spans.
-            max_batch_size: The maximum number of spans to export in a single batch.
-            schedule_delay: The delay between checks for new spans to export.
-            export_trigger_ratio: The ratio of the queue size at which we will trigger an export.
-        """
         self._exporter = exporter
         self._queue: queue.Queue[Trace | Span[Any]] = queue.Queue(maxsize=max_queue_size)
         self._max_queue_size = max_queue_size
@@ -244,13 +216,9 @@ class BatchTraceProcessor(TracingProcessor):
         self._schedule_delay = schedule_delay
         self._shutdown_event = threading.Event()
 
-        # The queue size threshold at which we export immediately.
         self._export_trigger_size = max(1, int(max_queue_size * export_trigger_ratio))
-
-        # Track when we next *must* perform a scheduled export
         self._next_export_time = time.time() + self._schedule_delay
 
-        # We lazily start the background worker thread the first time a span/trace is queued.
         self._worker_thread: threading.Thread | None = None
         self._thread_start_lock = threading.Lock()
 
@@ -294,16 +262,11 @@ class BatchTraceProcessor(TracingProcessor):
             logger.warning("Queue is full, dropping span.")
 
     def shutdown(self, timeout: float | None = None):
-        """
-        Called when the application stops. We signal our thread to stop, then join it.
-        """
         self._shutdown_event.set()
 
-        # Only join if we ever started the background thread; otherwise flush synchronously.
         if self._worker_thread and self._worker_thread.is_alive():
             self._worker_thread.join(timeout=timeout)
         else:
-            # No background thread: process any remaining items synchronously.
             self._export_batches(force=True)
 
     def force_flush(self):
@@ -330,32 +293,22 @@ class BatchTraceProcessor(TracingProcessor):
         self._export_batches(force=True)
 
     def _export_batches(self, force: bool = False):
-        """Drains the queue and exports in batches. If force=True, export everything.
-        Otherwise, export up to `max_batch_size` repeatedly until the queue is completely empty.
-        """
         while True:
             items_to_export: list[Span[Any] | Trace] = []
 
-            # Gather a batch of spans up to max_batch_size
             while not self._queue.empty() and (
                 force or len(items_to_export) < self._max_batch_size
             ):
                 try:
                     items_to_export.append(self._queue.get_nowait())
                 except queue.Empty:
-                    # Another thread might have emptied the queue between checks
                     break
 
-            # If we collected nothing, we're done
             if not items_to_export:
                 break
 
-            # Export the batch
             self._exporter.export(items_to_export)
 
-
-# Lazily initialized defaults to avoid creating network clients or threading
-# primitives during module import (important for fork-based process models).
 _global_exporter: BackendSpanExporter | None = None
 _global_processor: BatchTraceProcessor | None = None
 _global_lock = threading.Lock()
@@ -379,7 +332,6 @@ def default_exporter() -> BackendSpanExporter:
 
 
 def default_processor() -> BatchTraceProcessor:
-    """The default processor, which exports traces and spans to the backend in batches."""
     global _global_exporter
     global _global_processor
 

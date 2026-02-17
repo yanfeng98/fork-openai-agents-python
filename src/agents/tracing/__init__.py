@@ -97,9 +97,6 @@ def set_trace_processors(processors: list[TracingProcessor]) -> None:
 
 
 def set_tracing_disabled(disabled: bool) -> None:
-    """
-    Set whether tracing is globally disabled.
-    """
     get_trace_provider().set_disabled(disabled)
 
 
