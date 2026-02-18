@@ -70,37 +70,12 @@ class OutputGuardrailResult:
 
 @dataclass
 class InputGuardrail(Generic[TContext]):
-    """Input guardrails are checks that run either in parallel with the agent or before it starts.
-    They can be used to do things like:
-    - Check if input messages are off-topic
-    - Take over control of the agent's execution if an unexpected input is detected
-
-    You can use the `@input_guardrail()` decorator to turn a function into an `InputGuardrail`, or
-    create an `InputGuardrail` manually.
-
-    Guardrails return a `GuardrailResult`. If `result.tripwire_triggered` is `True`,
-    the agent's execution will immediately stop, and
-    an `InputGuardrailTripwireTriggered` exception will be raised
-    """
-
     guardrail_function: Callable[
         [RunContextWrapper[TContext], Agent[Any], str | list[TResponseInputItem]],
         MaybeAwaitable[GuardrailFunctionOutput],
     ]
-    """A function that receives the agent input and the context, and returns a
-     `GuardrailResult`. The result marks whether the tripwire was triggered, and can optionally
-     include information about the guardrail's output.
-    """
-
     name: str | None = None
-    """The name of the guardrail, used for tracing. If not provided, we'll use the guardrail
-    function's name.
-    """
-
     run_in_parallel: bool = True
-    """Whether the guardrail runs concurrently with the agent (True, default) or before
-    the agent starts (False).
-    """
 
     def get_name(self) -> str:
         if self.name:
@@ -132,29 +107,12 @@ class InputGuardrail(Generic[TContext]):
 
 @dataclass
 class OutputGuardrail(Generic[TContext]):
-    """Output guardrails are checks that run on the final output of an agent.
-    They can be used to do check if the output passes certain validation criteria
-
-    You can use the `@output_guardrail()` decorator to turn a function into an `OutputGuardrail`,
-    or create an `OutputGuardrail` manually.
-
-    Guardrails return a `GuardrailResult`. If `result.tripwire_triggered` is `True`, an
-    `OutputGuardrailTripwireTriggered` exception will be raised.
-    """
 
     guardrail_function: Callable[
         [RunContextWrapper[TContext], Agent[Any], Any],
         MaybeAwaitable[GuardrailFunctionOutput],
     ]
-    """A function that receives the final agent, its output, and the context, and returns a
-     `GuardrailResult`. The result marks whether the tripwire was triggered, and can optionally
-     include information about the guardrail's output.
-    """
-
     name: str | None = None
-    """The name of the guardrail, used for tracing. If not provided, we'll use the guardrail
-    function's name.
-    """
 
     def get_name(self) -> str:
         if self.name:

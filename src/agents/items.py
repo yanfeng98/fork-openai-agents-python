@@ -66,8 +66,6 @@ TResponse = Response
 """A type alias for the Response type from the OpenAI SDK."""
 
 TResponseInputItem = ResponseInputItemParam
-"""A type alias for the ResponseInputItemParam type from the OpenAI SDK."""
-
 TResponseOutputItem = ResponseOutputItem
 """A type alias for the ResponseOutputItem type from the OpenAI SDK."""
 

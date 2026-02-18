@@ -11,9 +11,6 @@ TAgent = TypeVar("TAgent", bound=AgentBase, default=AgentBase)
 
 
 class RunHooksBase(Generic[TContext, TAgent]):
-    """A class that receives callbacks on various lifecycle events in an agent run. Subclass and
-    override the methods you need.
-    """
 
     async def on_llm_start(
         self,
@@ -88,11 +85,6 @@ class RunHooksBase(Generic[TContext, TAgent]):
 
 
 class AgentHooksBase(Generic[TContext, TAgent]):
-    """A class that receives callbacks on various lifecycle events for a specific agent. You can
-    set this on `agent.hooks` to receive events for that specific agent.
-
-    Subclass and override the methods you need.
-    """
 
     async def on_start(self, context: AgentHookContext[TContext], agent: TAgent) -> None:
         """Called before the agent is invoked. Called each time the running agent is changed to this
@@ -169,7 +161,6 @@ class AgentHooksBase(Generic[TContext, TAgent]):
 
 
 RunHooks = RunHooksBase[TContext, Agent]
-"""Run hooks when using `Agent`."""
 
 AgentHooks = AgentHooksBase[TContext, Agent]
 """Agent hooks for `Agent`s."""

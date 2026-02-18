@@ -30,7 +30,6 @@ __all__ = [
 def validate_run_hooks(
     hooks: RunHooksBase[Any, Agent[Any]] | AgentHooksBase[Any, Agent[Any]] | Any | None,
 ) -> RunHooks[Any]:
-    """Normalize hooks input and enforce RunHooks type."""
     if hooks is None:
         return RunHooks[Any]()
     input_hook_type = type(hooks).__name__

@@ -167,27 +167,6 @@ class Runner:
         conversation_id: str | None = None,
         session: Session | None = None,
     ) -> RunResult:
-        """
-        Args:
-            error_handlers: Error handlers keyed by error kind. Currently supports max_turns.
-            previous_response_id: The ID of the previous response. If using OpenAI
-                models via the Responses API, this allows you to skip passing in input
-                from the previous turn.
-            conversation_id: The conversation ID
-                (https://platform.openai.com/docs/guides/conversation-state?api-mode=responses).
-                If provided, the conversation will be used to read and write items.
-                Every agent will have access to the conversation history so far,
-                and its output items will be written to the conversation.
-                We recommend only using this if you are exclusively using OpenAI models;
-                other model providers don't write to the Conversation object,
-                so you'll end up having partial conversations stored.
-            session: A session for automatic conversation history management.
-
-        Returns:
-            A run result containing all the inputs, guardrail results and the output of
-            the last agent. Agents may perform handoffs, so we don't know the specific
-            type of the output.
-        """
 
         runner = DEFAULT_AGENT_RUNNER
         return await runner.run(
@@ -359,10 +338,6 @@ class Runner:
 
 
 class AgentRunner:
-    """
-    WARNING: this class is experimental and not part of the public API
-    It should not be used directly or subclassed.
-    """
 
     async def run(
         self,

@@ -71,10 +71,6 @@ class Model(abc.ABC):
 
 
 class ModelProvider(abc.ABC):
-    """The base interface for a model provider.
-
-    Model provider is responsible for looking up Models by name.
-    """
 
     @abc.abstractmethod
     def get_model(self, model_name: str | None) -> Model:
