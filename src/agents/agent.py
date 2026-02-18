@@ -151,32 +151,12 @@ class MCPConfig(TypedDict):
 
 @dataclass
 class AgentBase(Generic[TContext]):
-    """Base class for `Agent` and `RealtimeAgent`."""
 
     name: str
-    """The name of the agent."""
-
     handoff_description: str | None = None
-    """A description of the agent. This is used when the agent is used as a handoff, so that an
-    LLM knows what it does and when to invoke it.
-    """
-
     tools: list[Tool] = field(default_factory=list)
-    """A list of tools that the agent can use."""
-
     mcp_servers: list[MCPServer] = field(default_factory=list)
-    """A list of [Model Context Protocol](https://modelcontextprotocol.io/) servers that
-    the agent can use. Every time the agent runs, it will include tools from these servers in the
-    list of available tools.
-
-    NOTE: You are expected to manage the lifecycle of these servers. Specifically, you must call
-    `server.connect()` before passing it to the agent, and `server.cleanup()` when the server is no
-    longer needed. Consider using `MCPServerManager` from `agents.mcp` to keep connect/cleanup
-    in the same task.
-    """
-
     mcp_config: MCPConfig = field(default_factory=lambda: MCPConfig())
-    """Configuration for MCP servers."""
 
     async def get_mcp_tools(self, run_context: RunContextWrapper[TContext]) -> list[Tool]:
         """Fetches the available tools from the MCP servers."""
@@ -217,17 +197,6 @@ class AgentBase(Generic[TContext]):
 
 @dataclass
 class Agent(AgentBase, Generic[TContext]):
-    """An agent is an AI model configured with instructions, tools, guardrails, handoffs and more.
-
-    We strongly recommend passing `instructions`, which is the "system prompt" for the agent. In
-    addition, you can pass `handoff_description`, which is a human-readable description of the
-    agent, used when the agent is used inside tools/handoffs.
-
-    Agents are generic on the context type. The context is a (mutable) object you create. It is
-    passed to tool functions, handoffs, guardrails, etc.
-
-    See `AgentBase` for base parameters that are shared with `RealtimeAgent`s.
-    """
 
     instructions: (
         str
@@ -237,85 +206,18 @@ class Agent(AgentBase, Generic[TContext]):
         ]
         | None
     ) = None
-    """The instructions for the agent. Will be used as the "system prompt" when this agent is
-    invoked. Describes what the agent should do, and how it responds.
-
-    Can either be a string, or a function that dynamically generates instructions for the agent. If
-    you provide a function, it will be called with the context and the agent instance. It must
-    return a string.
-    """
-
     prompt: Prompt | DynamicPromptFunction | None = None
-    """A prompt object (or a function that returns a Prompt). Prompts allow you to dynamically
-    configure the instructions, tools and other config for an agent outside of your code. Only
-    usable with OpenAI models, using the Responses API.
-    """
-
     handoffs: list[Agent[Any] | Handoff[TContext, Any]] = field(default_factory=list)
-    """Handoffs are sub-agents that the agent can delegate to. You can provide a list of handoffs,
-    and the agent can choose to delegate to them if relevant. Allows for separation of concerns and
-    modularity.
-    """
-
     model: str | Model | None = None
-    """The model implementation to use when invoking the LLM.
-
-    By default, if not set, the agent will use the default model configured in
-    `agents.models.get_default_model()` (currently "gpt-4.1").
-    """
-
     model_settings: ModelSettings = field(default_factory=get_default_model_settings)
-    """Configures model-specific tuning parameters (e.g. temperature, top_p).
-    """
-
     input_guardrails: list[InputGuardrail[TContext]] = field(default_factory=list)
-    """A list of checks that run in parallel to the agent's execution, before generating a
-    response. Runs only if the agent is the first agent in the chain.
-    """
-
     output_guardrails: list[OutputGuardrail[TContext]] = field(default_factory=list)
-    """A list of checks that run on the final output of the agent, after generating a response.
-    Runs only if the agent produces a final output.
-    """
-
     output_type: type[Any] | AgentOutputSchemaBase | None = None
-    """The type of the output object. If not provided, the output will be `str`. In most cases,
-    you should pass a regular Python type (e.g. a dataclass, Pydantic model, TypedDict, etc).
-    You can customize this in two ways:
-    1. If you want non-strict schemas, pass `AgentOutputSchema(MyClass, strict_json_schema=False)`.
-    2. If you want to use a custom JSON schema (i.e. without using the SDK's automatic schema)
-       creation, subclass and pass an `AgentOutputSchemaBase` subclass.
-    """
-
     hooks: AgentHooks[TContext] | None = None
-    """A class that receives callbacks on various lifecycle events for this agent.
-    """
-
     tool_use_behavior: (
         Literal["run_llm_again", "stop_on_first_tool"] | StopAtTools | ToolsToFinalOutputFunction
     ) = "run_llm_again"
-    """
-    This lets you configure how tool use is handled.
-    - "run_llm_again": The default behavior. Tools are run, and then the LLM receives the results
-        and gets to respond.
-    - "stop_on_first_tool": The output from the first tool call is treated as the final result.
-        In other words, it isn’t sent back to the LLM for further processing but is used directly
-        as the final output.
-    - A StopAtTools object: The agent will stop running if any of the tools listed in
-        `stop_at_tool_names` is called.
-        The final output will be the output of the first matching tool call.
-        The LLM does not process the result of the tool call.
-    - A function: If you pass a function, it will be called with the run context and the list of
-      tool results. It must return a `ToolsToFinalOutputResult`, which determines whether the tool
-      calls result in a final output.
-
-      NOTE: This configuration is specific to FunctionTools. Hosted tools, such as file search,
-      web search, etc. are always processed by the LLM.
-    """
-
     reset_tool_choice: bool = True
-    """Whether to reset the tool choice to the default value after a tool has been called. Defaults
-    to True. This ensures that the agent doesn't enter an infinite loop of tool usage."""
 
     def __post_init__(self):
         from typing import get_origin
@@ -380,23 +282,16 @@ class Agent(AgentBase, Generic[TContext]):
             )
 
         if (
-            # The user sets a non-default model
             self.model is not None
             and (
-                # The default model is gpt-5
                 is_gpt_5_default() is True
-                # However, the specified model is not a gpt-5 model
                 and (
                     isinstance(self.model, str) is False
                     or gpt_5_reasoning_settings_required(self.model) is False  # type: ignore
                 )
-                # The model settings are not customized for the specified model
                 and self.model_settings == get_default_model_settings()
             )
         ):
-            # In this scenario, we should use a generic model settings
-            # because non-gpt-5 models are not compatible with the default gpt-5 model settings.
-            # This is a best-effort attempt to make the agent work with non-gpt-5 models.
             self.model_settings = ModelSettings()
 
         if not isinstance(self.input_guardrails, list):

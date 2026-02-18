@@ -34,7 +34,6 @@ class ModelTracing(enum.Enum):
 
 
 class Model(abc.ABC):
-    """The base interface for calling an LLM."""
 
     @abc.abstractmethod
     async def get_response(
@@ -51,24 +50,6 @@ class Model(abc.ABC):
         conversation_id: str | None,
         prompt: ResponsePromptParam | None,
     ) -> ModelResponse:
-        """Get a response from the model.
-
-        Args:
-            system_instructions: The system instructions to use.
-            input: The input items to the model, in OpenAI Responses format.
-            model_settings: The model settings to use.
-            tools: The tools available to the model.
-            output_schema: The output schema to use.
-            handoffs: The handoffs available to the model.
-            tracing: Tracing configuration.
-            previous_response_id: the ID of the previous response. Generally not used by the model,
-                except for the OpenAI Responses API.
-            conversation_id: The ID of the stored conversation, if any.
-            prompt: The prompt config to use for the model.
-
-        Returns:
-            The full model response.
-        """
         pass
 
     @abc.abstractmethod
@@ -86,24 +67,6 @@ class Model(abc.ABC):
         conversation_id: str | None,
         prompt: ResponsePromptParam | None,
     ) -> AsyncIterator[TResponseStreamEvent]:
-        """Stream a response from the model.
-
-        Args:
-            system_instructions: The system instructions to use.
-            input: The input items to the model, in OpenAI Responses format.
-            model_settings: The model settings to use.
-            tools: The tools available to the model.
-            output_schema: The output schema to use.
-            handoffs: The handoffs available to the model.
-            tracing: Tracing configuration.
-            previous_response_id: the ID of the previous response. Generally not used by the model,
-                except for the OpenAI Responses API.
-            conversation_id: The ID of the stored conversation, if any.
-            prompt: The prompt config to use for the model.
-
-        Returns:
-            An iterator of response stream events, in OpenAI Responses format.
-        """
         pass
 
 

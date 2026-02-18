@@ -211,19 +211,10 @@ class DefaultTraceProvider(TraceProvider):
         return Scope.get_current_span()
 
     def set_disabled(self, disabled: bool) -> None:
-        """
-        Set whether tracing is disabled.
-        """
         self._manual_disabled = disabled
         self._refresh_disabled_flag()
 
     def _refresh_disabled_flag(self) -> None:
-        """Refresh disabled flag from cached env value and manual override.
-
-        The env flag is read once on first use to avoid surprises mid-run; further env
-        changes are ignored after the manual flag is set via set_disabled, which always
-        takes precedence over the env value.
-        """
         if self._env_disabled is None:
             self._env_disabled = os.environ.get(
                 "OPENAI_AGENTS_DISABLE_TRACING", "false"

@@ -168,34 +168,7 @@ class Runner:
         session: Session | None = None,
     ) -> RunResult:
         """
-        Run a workflow starting at the given agent.
-
-        The agent will run in a loop until a final output is generated. The loop runs like so:
-
-          1. The agent is invoked with the given input.
-          2. If there is a final output (i.e. the agent produces something of type
-             `agent.output_type`), the loop terminates.
-          3. If there's a handoff, we run the loop again, with the new agent.
-          4. Else, we run tool calls (if any), and re-run the loop.
-
-        In two cases, the agent may raise an exception:
-
-          1. If the max_turns is exceeded, a MaxTurnsExceeded exception is raised unless handled.
-          2. If a guardrail tripwire is triggered, a GuardrailTripwireTriggered
-             exception is raised.
-
-        Note:
-            Only the first agent's input guardrails are run.
-
         Args:
-            starting_agent: The starting agent to run.
-            input: The initial input to the agent. You can pass a single string for a
-                user message, or a list of input items.
-            context: The context to run the agent with.
-            max_turns: The maximum number of turns to run the agent for. A turn is
-                defined as one AI invocation (including any tool calls that might occur).
-            hooks: An object that receives callbacks on various lifecycle events.
-            run_config: Global settings for the entire agent run.
             error_handlers: Error handlers keyed by error kind. Currently supports max_turns.
             previous_response_id: The ID of the previous response. If using OpenAI
                 models via the Responses API, this allows you to skip passing in input

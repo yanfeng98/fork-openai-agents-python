@@ -20,17 +20,9 @@ if TYPE_CHECKING:
 
 
 class Prompt(TypedDict):
-    """Prompt configuration to use for interacting with an OpenAI model."""
-
     id: str
-    """The unique ID of the prompt."""
-
     version: NotRequired[str]
-    """Optional version of the prompt."""
-
     variables: NotRequired[dict[str, ResponsesPromptVariables]]
-    """Optional variables to substitute into the prompt."""
-
 
 @dataclass
 class GenerateDynamicPromptData:
