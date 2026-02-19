@@ -76,7 +76,6 @@ def apply_resumed_conversation_settings(
     previous_response_id: str | None,
     auto_previous_response_id: bool,
 ) -> tuple[str | None, str | None, bool]:
-    """Apply RunState conversation identifiers and return the resolved values."""
     conversation_id = conversation_id or run_state._conversation_id
     previous_response_id = previous_response_id or run_state._previous_response_id
     if auto_previous_response_id is False and run_state._auto_previous_response_id:
@@ -139,7 +138,6 @@ def resolve_resumed_context(
     run_state: RunState[TContext],
     context: RunContextWrapper[TContext] | TContext | None,
 ) -> RunContextWrapper[TContext]:
-    """Return the context wrapper for a resumed run, overriding when provided."""
     if context is not None:
         context_wrapper = ensure_context_wrapper(context)
         set_agent_tool_state_scope(context_wrapper, run_state._agent_tool_state_scope_id)
@@ -154,7 +152,6 @@ def resolve_resumed_context(
 def ensure_context_wrapper(
     context: RunContextWrapper[TContext] | TContext | None,
 ) -> RunContextWrapper[TContext]:
-    """Normalize a context value into a RunContextWrapper."""
     if isinstance(context, RunContextWrapper):
         return context
     return RunContextWrapper(context=cast(TContext, context))

@@ -102,38 +102,16 @@ def _normalize_output_tokens_details(
 @dataclass
 class Usage:
     requests: int = 0
-    """Total requests made to the LLM API."""
-
     input_tokens: int = 0
-    """Total input tokens sent, across all requests."""
-
     input_tokens_details: Annotated[
         InputTokensDetails, BeforeValidator(_normalize_input_tokens_details)
     ] = field(default_factory=lambda: InputTokensDetails(cached_tokens=0))
-    """Details about the input tokens, matching responses API usage details."""
     output_tokens: int = 0
-    """Total output tokens received, across all requests."""
-
     output_tokens_details: Annotated[
         OutputTokensDetails, BeforeValidator(_normalize_output_tokens_details)
     ] = field(default_factory=lambda: OutputTokensDetails(reasoning_tokens=0))
-    """Details about the output tokens, matching responses API usage details."""
-
     total_tokens: int = 0
-    """Total tokens sent and received, across all requests."""
-
     request_usage_entries: list[RequestUsage] = field(default_factory=list)
-    """List of RequestUsage entries for accurate per-request cost calculation.
-
-    Each call to `add()` automatically creates an entry in this list if the added usage
-    represents a new request (i.e., has non-zero tokens).
-
-    Example:
-        For a run that makes 3 API calls with 100K, 150K, and 80K input tokens each,
-        the aggregated `input_tokens` would be 330K, but `request_usage_entries` would
-        preserve the [100K, 150K, 80K] breakdown, which could be helpful for detailed
-        cost calculation or context window management.
-    """
 
     def __post_init__(self) -> None:
         # Some providers don't populate optional token detail fields

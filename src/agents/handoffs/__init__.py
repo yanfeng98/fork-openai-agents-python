@@ -31,8 +31,6 @@ if TYPE_CHECKING:
 
 # The handoff input type is the type of data passed when the agent is called via a handoff.
 THandoffInput = TypeVar("THandoffInput", default=Any)
-
-# The agent type that the handoff returns.
 TAgent = TypeVar("TAgent", bound="AgentBase[Any]", default="Agent[Any]")
 
 OnHandoffWithInput = Callable[[RunContextWrapper[Any], THandoffInput], Any]
@@ -92,19 +90,9 @@ HandoffHistoryMapper: TypeAlias = Callable[[list[TResponseInputItem]], list[TRes
 
 @dataclass
 class Handoff(Generic[TContext, TAgent]):
-    """A handoff is when an agent delegates a task to another agent.
-
-    For example, in a customer support scenario you might have a "triage agent" that determines
-    which agent should handle the user's request, and sub-agents that specialize in different areas
-    like billing, account management, etc.
-    """
 
     tool_name: str
-    """The name of the tool that represents the handoff."""
-
     tool_description: str
-    """The description of the tool that represents the handoff."""
-
     input_json_schema: dict[str, Any]
     """The JSON schema for the handoff input. Can be empty if the handoff does not take an input."""
 
@@ -116,8 +104,6 @@ class Handoff(Generic[TContext, TAgent]):
     """
 
     agent_name: str
-    """The name of the agent that is being handed off to."""
-
     input_filter: HandoffInputFilter | None = None
     """A function that filters the inputs that are passed to the next agent.
 
@@ -152,7 +138,6 @@ class Handoff(Generic[TContext, TAgent]):
     _agent_ref: weakref.ReferenceType[AgentBase[Any]] | None = field(
         default=None, init=False, repr=False
     )
-    """Weak reference to the target agent when constructed via `handoff()`."""
 
     def get_transfer_message(self, agent: AgentBase[Any]) -> str:
         return json.dumps({"assistant": agent.name})

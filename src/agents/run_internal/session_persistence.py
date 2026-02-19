@@ -57,10 +57,6 @@ async def prepare_input_with_session(
     include_history_in_prepared_input: bool = True,
     preserve_dropped_new_items: bool = False,
 ) -> tuple[str | list[TResponseInputItem], list[TResponseInputItem]]:
-    """
-    Prepare input by combining it with session history and applying the optional input callback.
-    Returns the prepared input plus the appended items that should be persisted separately.
-    """
 
     if session is None:
         return input, []
@@ -542,7 +538,6 @@ def _fingerprint_or_repr(item: TResponseInputItem, *, ignore_ids_for_matching: b
 
 
 def _session_item_key(item: Any) -> str:
-    """Return a stable representation of a session item for comparison."""
     try:
         if hasattr(item, "model_dump"):
             payload = item.model_dump(exclude_unset=True)
@@ -556,7 +551,6 @@ def _session_item_key(item: Any) -> str:
 
 
 def _build_reference_map(items: Sequence[Any]) -> dict[str, list[Any]]:
-    """Map serialized keys to the concrete session items used to build them."""
     refs: dict[str, list[Any]] = {}
     for item in items:
         key = _session_item_key(item)
@@ -565,7 +559,6 @@ def _build_reference_map(items: Sequence[Any]) -> dict[str, list[Any]]:
 
 
 def _consume_reference(ref_map: dict[str, list[Any]], key: str, candidate: Any) -> bool:
-    """Remove a specific candidate from a reference map when it is consumed."""
     candidates = ref_map.get(key)
     if not candidates:
         return False
@@ -579,7 +572,6 @@ def _consume_reference(ref_map: dict[str, list[Any]], key: str, candidate: Any) 
 
 
 def _build_frequency_map(items: Sequence[Any]) -> dict[str, int]:
-    """Count how many times each serialized key appears in a collection."""
     freq: dict[str, int] = {}
     for item in items:
         key = _session_item_key(item)

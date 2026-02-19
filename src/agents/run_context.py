@@ -20,11 +20,6 @@ TContext = TypeVar("TContext", default=Any)
 
 @dataclass(eq=False)
 class _ApprovalRecord:
-    """Tracks approval/rejection state for a tool.
-
-    ``approved`` and ``rejected`` are either booleans (permanent allow/deny)
-    or lists of call IDs when approval is scoped to specific tool calls.
-    """
 
     approved: bool | list[str] = field(default_factory=list)
     rejected: bool | list[str] = field(default_factory=list)
@@ -32,25 +27,12 @@ class _ApprovalRecord:
 
 @dataclass(eq=False)
 class RunContextWrapper(Generic[TContext]):
-    """This wraps the context object that you passed to `Runner.run()`. It also contains
-    information about the usage of the agent run so far.
-
-    NOTE: Contexts are not passed to the LLM. They're a way to pass dependencies and data to code
-    you implement, like tool functions, callbacks, hooks, etc.
-    """
 
     context: TContext
-    """The context object (or None), passed by you to `Runner.run()`"""
-
     usage: Usage = field(default_factory=Usage)
-    """The usage of the agent run so far. For streamed responses, the usage will be stale until the
-    last chunk of the stream is processed.
-    """
-
     turn_input: list[TResponseInputItem] = field(default_factory=list)
     _approvals: dict[str, _ApprovalRecord] = field(default_factory=dict)
     tool_input: Any | None = None
-    """Structured input for the current agent tool run, when available."""
 
     @staticmethod
     def _to_str_or_none(value: Any) -> str | None:

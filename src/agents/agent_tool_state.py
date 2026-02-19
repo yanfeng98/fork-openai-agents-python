@@ -34,7 +34,6 @@ def get_agent_tool_state_scope(context: Any) -> str | None:
 
 
 def set_agent_tool_state_scope(context: Any, scope_id: str | None) -> None:
-    """Attach or clear the private agent-tool cache scope id on a context wrapper."""
     if context is None:
         return
     if scope_id is None:

@@ -45,15 +45,10 @@ __all__ = [
 
 
 def copy_input_items(value: str | list[TResponseInputItem]) -> str | list[TResponseInputItem]:
-    """Return a shallow copy of input items so mutations do not leak between turns."""
     return value if isinstance(value, str) else value.copy()
 
 
 def drop_orphan_function_calls(items: list[TResponseInputItem]) -> list[TResponseInputItem]:
-    """
-    Remove tool call items that do not have corresponding outputs so resumptions or retries do not
-    replay stale tool calls.
-    """
 
     completed_call_ids = _completed_call_ids_by_type(items)
 
@@ -77,7 +72,6 @@ def drop_orphan_function_calls(items: list[TResponseInputItem]) -> list[TRespons
 
 
 def ensure_input_item_format(item: TResponseInputItem) -> TResponseInputItem:
-    """Ensure a single item is normalized for model input."""
     coerced = _coerce_to_dict(item)
     if coerced is None:
         return item
@@ -86,7 +80,6 @@ def ensure_input_item_format(item: TResponseInputItem) -> TResponseInputItem:
 
 
 def normalize_input_items_for_api(items: list[TResponseInputItem]) -> list[TResponseInputItem]:
-    """Normalize input items for API submission."""
 
     normalized: list[TResponseInputItem] = []
     for item in items:
@@ -103,7 +96,6 @@ def normalize_input_items_for_api(items: list[TResponseInputItem]) -> list[TResp
 def normalize_resumed_input(
     raw_input: str | list[TResponseInputItem],
 ) -> str | list[TResponseInputItem]:
-    """Normalize resumed list inputs and drop orphan tool calls."""
     if isinstance(raw_input, list):
         normalized = normalize_input_items_for_api(raw_input)
         return drop_orphan_function_calls(normalized)
@@ -136,7 +128,6 @@ def fingerprint_input_item(item: Any, *, ignore_ids_for_matching: bool = False) 
 
 
 def _dedupe_key(item: TResponseInputItem) -> str | None:
-    """Return a stable identity key when items carry explicit identifiers."""
     payload = _coerce_to_dict(item)
     if payload is None:
         return None
@@ -147,7 +138,6 @@ def _dedupe_key(item: TResponseInputItem) -> str | None:
         return None
     item_id = payload.get("id")
     if item_id == FAKE_RESPONSES_ID:
-        # Ignore placeholder IDs so call_id-based dedupe remains possible.
         item_id = None
     if isinstance(item_id, str):
         return f"id:{item_type}:{item_id}"
@@ -156,7 +146,6 @@ def _dedupe_key(item: TResponseInputItem) -> str | None:
     if isinstance(call_id, str):
         return f"call_id:{item_type}:{call_id}"
 
-    # points back to the originating approval request ID on hosted MCP responses
     approval_request_id = payload.get("approval_request_id")
     if isinstance(approval_request_id, str):
         return f"approval_request_id:{item_type}:{approval_request_id}"
@@ -165,7 +154,6 @@ def _dedupe_key(item: TResponseInputItem) -> str | None:
 
 
 def deduplicate_input_items(items: Sequence[TResponseInputItem]) -> list[TResponseInputItem]:
-    """Remove duplicate items that share stable identifiers to avoid re-sending tool outputs."""
     seen_keys: set[str] = set()
     deduplicated: list[TResponseInputItem] = []
     for item in items:
@@ -183,9 +171,6 @@ def deduplicate_input_items(items: Sequence[TResponseInputItem]) -> list[TRespon
 def deduplicate_input_items_preferring_latest(
     items: Sequence[TResponseInputItem],
 ) -> list[TResponseInputItem]:
-    """Deduplicate by stable identifiers while keeping the latest occurrence."""
-    # deduplicate_input_items keeps the first item per dedupe key. Reverse twice so that
-    # the latest item in the original order wins for duplicate IDs/call_ids.
     return list(reversed(deduplicate_input_items(list(reversed(items)))))
 
 
@@ -291,13 +276,7 @@ def extract_mcp_request_id_from_run(mcp_run: Any) -> str | None:
     return candidate if isinstance(candidate, str) else None
 
 
-# --------------------------
-# Private helpers
-# --------------------------
-
-
 def _completed_call_ids_by_type(payload: list[TResponseInputItem]) -> dict[str, set[str]]:
-    """Return call ids that already have outputs, grouped by output type."""
     completed: dict[str, set[str]] = {
         output_type: set() for output_type in _TOOL_CALL_TO_OUTPUT_TYPE.values()
     }
@@ -314,7 +293,6 @@ def _completed_call_ids_by_type(payload: list[TResponseInputItem]) -> dict[str, 
 
 
 def _coerce_to_dict(value: object) -> dict[str, Any] | None:
-    """Convert model items to dicts so fields can be renamed and sanitized."""
     if isinstance(value, dict):
         return dict(value)
     if isinstance(value, BaseModel):
@@ -325,7 +303,6 @@ def _coerce_to_dict(value: object) -> dict[str, Any] | None:
 
 
 def _model_dump_without_warnings(value: object) -> dict[str, Any] | None:
-    """Best-effort model_dump that avoids noisy serialization warnings from third-party models."""
     if not hasattr(value, "model_dump"):
         return None
 
@@ -333,7 +310,6 @@ def _model_dump_without_warnings(value: object) -> dict[str, Any] | None:
     try:
         return cast(dict[str, Any], model_dump(exclude_unset=True, warnings=False))
     except TypeError:
-        # Some model_dump-compatible objects only accept exclude_unset.
         try:
             return cast(dict[str, Any], model_dump(exclude_unset=True))
         except Exception:

@@ -522,7 +522,6 @@ class ItemHelpers:
     def input_to_new_input_list(
         cls, input: str | list[TResponseInputItem]
     ) -> list[TResponseInputItem]:
-        """Converts a string or list of input items into a list of input items."""
         if isinstance(input, str):
             return [
                 {

@@ -365,8 +365,6 @@ class AgentRunner:
         session_input_items_for_persistence: list[TResponseInputItem] | None = (
             [] if (session is not None and is_resumed_state) else None
         )
-        # Track the most recent input batch we persisted so conversation-lock retries can rewind
-        # exactly those items (and not the full history).
         last_saved_input_snapshot_for_rewind: list[TResponseInputItem] | None = None
 
         if is_resumed_state:
@@ -438,7 +436,6 @@ class AgentRunner:
                 )
                 original_input_for_state = prepared_input
 
-        # Check whether to enable OpenAI server-managed conversation
         if (
             conversation_id is not None
             or previous_response_id is not None

@@ -12,11 +12,6 @@ if TYPE_CHECKING:
 
 @runtime_checkable
 class Session(Protocol):
-    """Protocol for session implementations.
-
-    Session stores conversation history for a specific session, allowing
-    agents to maintain context without requiring explicit manual memory management.
-    """
 
     session_id: str
     session_settings: SessionSettings | None = None

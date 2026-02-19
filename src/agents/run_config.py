@@ -100,25 +100,8 @@ class RunConfig:
     trace_metadata: dict[str, Any] | None = None
     session_input_callback: SessionInputCallback | None = None
     call_model_input_filter: CallModelInputFilter | None = None
-    """
-    Optional callback that is invoked immediately before calling the model. It receives the current
-    agent, context and the model input (instructions and input items), and must return a possibly
-    modified `ModelInputData` to use for the model call.
-
-    This allows you to edit the input sent to the model e.g. to stay within a token limit.
-    For example, you can use this to add a system prompt to the input.
-    """
-
     tool_error_formatter: ToolErrorFormatter | None = None
-    """Optional callback that formats tool error messages returned to the model.
-
-    Returning ``None`` falls back to the SDK default message.
-    """
-
     session_settings: SessionSettings | None = None
-    """Configure session settings. Any non-null values will override the session's default
-    settings. Used to control session behavior like the number of items to retrieve.
-    """
 
 
 class RunOptions(TypedDict, Generic[TContext]):

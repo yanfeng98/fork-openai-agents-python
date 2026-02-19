@@ -1,5 +1,3 @@
-"""Session configuration settings."""
-
 from __future__ import annotations
 
 import dataclasses
@@ -23,18 +21,10 @@ def resolve_session_limit(
 
 @dataclass
 class SessionSettings:
-    """Settings for session operations.
-
-    This class holds optional session configuration parameters that can be used
-    when interacting with session methods.
-    """
 
     limit: int | None = None
-    """Maximum number of items to retrieve. If None, retrieves all items."""
 
     def resolve(self, override: SessionSettings | None) -> SessionSettings:
-        """Produce a new SessionSettings by overlaying any non-None values from the
-        override on top of this instance."""
         if override is None:
             return self
 
@@ -47,5 +37,4 @@ class SessionSettings:
         return replace(self, **changes)
 
     def to_dict(self) -> dict[str, Any]:
-        """Convert settings to a dictionary."""
         return dataclasses.asdict(self)

@@ -34,7 +34,6 @@ def _fingerprint_for_tracker(item: Any) -> str | None:
 
 @dataclass
 class OpenAIServerConversationTracker:
-    """Track server-side conversation state for conversation-aware runs."""
 
     conversation_id: str | None = None
     previous_response_id: str | None = None
@@ -49,7 +48,6 @@ class OpenAIServerConversationTracker:
     primed_from_state: bool = False
 
     def __post_init__(self):
-        """Log initial tracker state to make conversation resume behavior debuggable."""
         logger.debug(
             "Created OpenAIServerConversationTracker for conv_id=%s, prev_resp_id=%s",
             self.conversation_id,

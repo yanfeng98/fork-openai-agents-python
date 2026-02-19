@@ -116,70 +116,28 @@ _MISSING_CONTEXT_SENTINEL = object()
 
 @dataclass
 class RunState(Generic[TContext, TAgent]):
-    """Serializable snapshot of an agent run, including context, usage, and interruptions."""
 
     _current_turn: int = 0
-    """Current turn number in the conversation."""
-
     _current_agent: TAgent | None = None
-    """The agent currently handling the conversation."""
-
     _original_input: str | list[Any] = field(default_factory=list)
-    """Original user input prior to any processing."""
-
     _model_responses: list[ModelResponse] = field(default_factory=list)
-    """Responses from the model so far."""
-
     _context: RunContextWrapper[TContext] | None = None
-    """Run context tracking approvals, usage, and other metadata."""
-
     _generated_items: list[RunItem] = field(default_factory=list)
-    """Items used to build model input when resuming; may be filtered by handoffs."""
-
     _session_items: list[RunItem] = field(default_factory=list)
-    """Full, unfiltered run items for session history."""
-
     _max_turns: int = 10
-    """Maximum allowed turns before forcing termination."""
-
     _conversation_id: str | None = None
-    """Conversation identifier for server-managed conversation tracking."""
-
     _previous_response_id: str | None = None
-    """Response identifier of the last server-managed response."""
-
     _auto_previous_response_id: bool = False
-    """Whether the previous response id should be automatically tracked."""
-
     _input_guardrail_results: list[InputGuardrailResult] = field(default_factory=list)
-    """Results from input guardrails applied to the run."""
-
     _output_guardrail_results: list[OutputGuardrailResult] = field(default_factory=list)
-    """Results from output guardrails applied to the run."""
-
     _tool_input_guardrail_results: list[ToolInputGuardrailResult] = field(default_factory=list)
-    """Results from tool input guardrails applied during the run."""
-
     _tool_output_guardrail_results: list[ToolOutputGuardrailResult] = field(default_factory=list)
-    """Results from tool output guardrails applied during the run."""
-
     _current_step: NextStepInterruption | None = None
-    """Current step if the run is interrupted (e.g., for tool approval)."""
-
     _last_processed_response: ProcessedResponse | None = None
-    """The last processed model response. This is needed for resuming from interruptions."""
-
     _current_turn_persisted_item_count: int = 0
-    """Tracks how many items from this turn were already written to the session."""
-
     _tool_use_tracker_snapshot: dict[str, list[str]] = field(default_factory=dict)
-    """Serialized snapshot of the AgentToolUseTracker (agent name -> tools used)."""
-
     _trace_state: TraceState | None = field(default=None, repr=False)
-    """Serialized trace metadata for resuming tracing context."""
-
     _agent_tool_state_scope_id: str | None = field(default=None, repr=False)
-    """Private scope id used to isolate agent-tool pending state per RunState instance."""
 
     def __init__(
         self,
@@ -2065,14 +2023,6 @@ async def _build_run_state_from_json(
 
 
 def _build_agent_map(initial_agent: Agent[Any]) -> dict[str, Agent[Any]]:
-    """Build a map of agent names to agents by traversing handoffs.
-
-    Args:
-        initial_agent: The starting agent.
-
-    Returns:
-        Dictionary mapping agent names to agent instances.
-    """
     agent_map: dict[str, Agent[Any]] = {}
     queue = [initial_agent]
 
@@ -2082,14 +2032,11 @@ def _build_agent_map(initial_agent: Agent[Any]) -> dict[str, Agent[Any]]:
             continue
         agent_map[current.name] = current
 
-        # Add handoff agents to the queue
         for handoff_item in current.handoffs:
             handoff_agent: Any | None = None
             handoff_agent_name: str | None = None
 
             if isinstance(handoff_item, Handoff):
-                # Some custom/mocked Handoff subclasses bypass dataclass initialization.
-                # Prefer agent_name, then legacy name fallback used in tests.
                 candidate_name = getattr(handoff_item, "agent_name", None) or getattr(
                     handoff_item, "name", None
                 )
@@ -2101,8 +2048,6 @@ def _build_agent_map(initial_agent: Agent[Any]) -> dict[str, Agent[Any]]:
                 handoff_ref = getattr(handoff_item, "_agent_ref", None)
                 handoff_agent = handoff_ref() if callable(handoff_ref) else None
                 if handoff_agent is None:
-                    # Backward-compatibility fallback for custom legacy handoff objects that store
-                    # the target directly on `.agent`. New code should prefer `handoff()` objects.
                     legacy_agent = getattr(handoff_item, "agent", None)
                     if legacy_agent is not None:
                         handoff_agent = legacy_agent
@@ -2121,8 +2066,6 @@ def _build_agent_map(initial_agent: Agent[Any]) -> dict[str, Agent[Any]]:
                         )
                     continue
             else:
-                # Backward-compatibility fallback for custom legacy handoff wrappers that expose
-                # the target directly on `.agent` without inheriting from `Handoff`.
                 legacy_agent = getattr(handoff_item, "agent", None)
                 if legacy_agent is not None:
                     handoff_agent = legacy_agent
@@ -2141,7 +2084,6 @@ def _build_agent_map(initial_agent: Agent[Any]) -> dict[str, Agent[Any]]:
             ):
                 queue.append(cast(Any, handoff_agent))
 
-        # Include agent-as-tool instances so nested approvals can be restored.
         tools = getattr(current, "tools", None)
         if tools:
             for tool in tools:
