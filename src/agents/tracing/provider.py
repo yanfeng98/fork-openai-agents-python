@@ -199,9 +199,6 @@ class DefaultTraceProvider(TraceProvider):
         self._multi_processor.set_processors(processors)
 
     def get_current_trace(self) -> Trace | None:
-        """
-        Returns the currently active trace, if any.
-        """
         return Scope.get_current_trace()
 
     def get_current_span(self) -> Span[Any] | None:
@@ -232,7 +229,6 @@ class DefaultTraceProvider(TraceProvider):
         return datetime.now(timezone.utc).isoformat()
 
     def gen_trace_id(self) -> str:
-        """Generate a new trace ID."""
         return f"trace_{uuid.uuid4().hex}"
 
     def gen_span_id(self) -> str:
@@ -252,9 +248,6 @@ class DefaultTraceProvider(TraceProvider):
         disabled: bool = False,
         tracing: TracingConfig | None = None,
     ) -> Trace:
-        """
-        Create a new trace.
-        """
         self._refresh_disabled_flag()
         if self._disabled or disabled:
             logger.debug(f"Tracing is disabled. Not creating trace {name}")

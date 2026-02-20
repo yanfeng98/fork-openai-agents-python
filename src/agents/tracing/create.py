@@ -34,30 +34,6 @@ def trace(
     tracing: TracingConfig | None = None,
     disabled: bool = False,
 ) -> Trace:
-    """
-    Create a new trace. The trace will not be started automatically; you should either use
-    it as a context manager (`with trace(...):`) or call `trace.start()` + `trace.finish()`
-    manually.
-
-    In addition to the workflow name and optional grouping identifier, you can provide
-    an arbitrary metadata dictionary to attach additional user-defined information to
-    the trace.
-
-    Args:
-        workflow_name: The name of the logical app or workflow. For example, you might provide
-            "code_bot" for a coding agent, or "customer_support_agent" for a customer support agent.
-        trace_id: The ID of the trace. Optional. If not provided, we will generate an ID. We
-            recommend using `util.gen_trace_id()` to generate a trace ID, to guarantee that IDs are
-            correctly formatted.
-        group_id: Optional grouping identifier to link multiple traces from the same conversation
-            or process. For instance, you might use a chat thread ID.
-        metadata: Optional dictionary of additional metadata to attach to the trace.
-        tracing: Optional tracing configuration for exporting this trace.
-        disabled: If True, we will return a Trace but the Trace will not be recorded.
-
-    Returns:
-        The newly created trace object.
-    """
     current_trace = get_trace_provider().get_current_trace()
     if current_trace:
         logger.warning(
@@ -75,7 +51,6 @@ def trace(
 
 
 def get_current_trace() -> Trace | None:
-    """Returns the currently active trace, if present."""
     return get_trace_provider().get_current_trace()
 
 

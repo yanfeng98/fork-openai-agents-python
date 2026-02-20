@@ -13,8 +13,6 @@ ScopedToolCallSignature = tuple[str | None, ToolCallSignature]
 
 _AGENT_TOOL_STATE_SCOPE_ATTR = "_agent_tool_state_scope_id"
 
-# Ephemeral maps linking tool call objects to nested agent results within the same run.
-# Store by object identity, and index by a stable signature to avoid call ID collisions.
 _agent_tool_run_results_by_obj: dict[int, RunResult | RunResultStreaming] = {}
 _agent_tool_run_results_by_signature: dict[
     ScopedToolCallSignature,
@@ -28,7 +26,6 @@ _agent_tool_call_refs_by_obj: dict[int, weakref.ReferenceType[ResponseFunctionTo
 
 
 def get_agent_tool_state_scope(context: Any) -> str | None:
-    """Read the private agent-tool cache scope id from a context wrapper."""
     scope_id = getattr(context, _AGENT_TOOL_STATE_SCOPE_ATTR, None)
     return scope_id if isinstance(scope_id, str) else None
 
@@ -51,7 +48,6 @@ def set_agent_tool_state_scope(context: Any, scope_id: str | None) -> None:
 def _tool_call_signature(
     tool_call: ResponseFunctionToolCall,
 ) -> ToolCallSignature:
-    """Build a stable signature for fallback lookup across tool call instances."""
     return (
         tool_call.call_id,
         tool_call.name,
@@ -65,7 +61,6 @@ def _tool_call_signature(
 def _scoped_tool_call_signature(
     tool_call: ResponseFunctionToolCall, *, scope_id: str | None
 ) -> ScopedToolCallSignature:
-    """Build a scope-qualified signature so independently restored states do not collide."""
     return (scope_id, _tool_call_signature(tool_call))
 
 
@@ -82,7 +77,6 @@ def _index_agent_tool_run_result(
 
 
 def _drop_agent_tool_run_result(tool_call_obj_id: int) -> None:
-    """Remove a tool call object from the fallback index."""
     tool_call_refs = _agent_tool_call_refs_by_obj
     if isinstance(tool_call_refs, dict):
         tool_call_refs.pop(tool_call_obj_id, None)
@@ -131,7 +125,6 @@ def record_agent_tool_run_result(
 def _tool_call_obj_matches_scope(tool_call_obj_id: int, *, scope_id: str | None) -> bool:
     scoped_signature = _agent_tool_run_result_signature_by_obj.get(tool_call_obj_id)
     if scoped_signature is None:
-        # Fallback for unindexed entries.
         return scope_id is None
     return scoped_signature[0] == scope_id
 
@@ -168,7 +161,6 @@ def peek_agent_tool_run_result(
     *,
     scope_id: str | None = None,
 ) -> RunResult | RunResultStreaming | None:
-    """Return the stored nested agent run result without removing it."""
     obj_id = id(tool_call)
     if _tool_call_obj_matches_scope(obj_id, scope_id=scope_id):
         run_result = _agent_tool_run_results_by_obj.get(obj_id)
@@ -191,7 +183,6 @@ def drop_agent_tool_run_result(
     *,
     scope_id: str | None = None,
 ) -> None:
-    """Drop the stored nested agent run result, if present."""
     obj_id = id(tool_call)
     if _tool_call_obj_matches_scope(obj_id, scope_id=scope_id):
         run_result = _agent_tool_run_results_by_obj.pop(obj_id, None)

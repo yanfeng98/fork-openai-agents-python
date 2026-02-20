@@ -90,14 +90,11 @@ class RunContextWrapper(Generic[TContext]):
         return approval_entry
 
     def is_tool_approved(self, tool_name: str, call_id: str) -> bool | None:
-        """Return True/False/None for the given tool call."""
         approval_entry = self._approvals.get(tool_name)
         if not approval_entry:
             return None
 
-        # Check for permanent approval/rejection
         if approval_entry.approved is True and approval_entry.rejected is True:
-            # Approval takes precedence
             return True
 
         if approval_entry.approved is True:
@@ -117,7 +114,6 @@ class RunContextWrapper(Generic[TContext]):
             return True
         if call_id in rejected_ids:
             return False
-        # Per-call approvals are scoped to the exact call ID, so other calls require a new decision.
         return None
 
     def _apply_approval_decision(
@@ -162,7 +158,6 @@ class RunContextWrapper(Generic[TContext]):
     def get_approval_status(
         self, tool_name: str, call_id: str, *, existing_pending: ToolApprovalItem | None = None
     ) -> bool | None:
-        """Return approval status, retrying with pending item's tool name if necessary."""
         status = self.is_tool_approved(tool_name, call_id)
         if status is None and existing_pending:
             fallback_tool_name = self._resolve_tool_name(existing_pending)

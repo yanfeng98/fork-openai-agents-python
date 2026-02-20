@@ -130,7 +130,6 @@ async def execute_mcp_approval_requests(
 
 
 def _build_tool_output_index(items: Sequence[RunItem]) -> set[tuple[str, str]]:
-    """Index tool call output items by (type, call_id) for fast lookups."""
     index: set[tuple[str, str]] = set()
     for item in items:
         if not isinstance(item, ToolCallOutputItem):

@@ -108,7 +108,6 @@ def resolve_trace_settings(
     run_state: RunState[TContext] | None,
     run_config: RunConfig,
 ) -> tuple[str, str | None, str | None, dict[str, Any] | None, TracingConfig | None]:
-    """Resolve tracing settings, preferring explicit run_config overrides."""
     trace_state: TraceState | None = run_state._trace_state if run_state is not None else None
     default_workflow_name = RunConfig().workflow_name
     workflow_name = run_config.workflow_name

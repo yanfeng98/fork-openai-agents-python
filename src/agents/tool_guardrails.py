@@ -17,24 +17,16 @@ if TYPE_CHECKING:
 
 @dataclass
 class ToolInputGuardrailResult:
-    """The result of a tool input guardrail run."""
 
     guardrail: ToolInputGuardrail[Any]
-    """The guardrail that was run."""
-
     output: ToolGuardrailFunctionOutput
-    """The output of the guardrail function."""
 
 
 @dataclass
 class ToolOutputGuardrailResult:
-    """The result of a tool output guardrail run."""
 
     guardrail: ToolOutputGuardrail[Any]
-    """The guardrail that was run."""
-
     output: ToolGuardrailFunctionOutput
-    """The output of the guardrail function."""
 
 
 class RejectContentBehavior(TypedDict):
@@ -58,23 +50,11 @@ class AllowBehavior(TypedDict):
 
 @dataclass
 class ToolGuardrailFunctionOutput:
-    """The output of a tool guardrail function."""
 
     output_info: Any
-    """
-    Optional data about checks performed. For example, the guardrail could include
-    information about the checks it performed and granular results.
-    """
-
     behavior: RejectContentBehavior | RaiseExceptionBehavior | AllowBehavior = field(
         default_factory=lambda: AllowBehavior(type="allow")
     )
-    """
-    Defines how the system should respond when this guardrail result is processed.
-    - allow: Allow normal tool execution to continue without interference (default)
-    - reject_content: Reject the tool call/output but continue execution with a message to the model
-    - raise_exception: Halt execution by raising a ToolGuardrailTripwireTriggered exception
-    """
 
     @classmethod
     def allow(cls, output_info: Any = None) -> ToolGuardrailFunctionOutput:
@@ -150,19 +130,11 @@ TContext_co = TypeVar("TContext_co", bound=Any, covariant=True)
 
 @dataclass
 class ToolInputGuardrail(Generic[TContext_co]):
-    """A guardrail that runs before a function tool is invoked."""
 
     guardrail_function: Callable[
         [ToolInputGuardrailData], MaybeAwaitable[ToolGuardrailFunctionOutput]
     ]
-    """
-    The function that implements the guardrail logic.
-    """
-
     name: str | None = None
-    """
-    Optional name for the guardrail. If not provided, uses the function name.
-    """
 
     def get_name(self) -> str:
         return self.name or self.guardrail_function.__name__
@@ -179,19 +151,11 @@ class ToolInputGuardrail(Generic[TContext_co]):
 
 @dataclass
 class ToolOutputGuardrail(Generic[TContext_co]):
-    """A guardrail that runs after a function tool is invoked."""
 
     guardrail_function: Callable[
         [ToolOutputGuardrailData], MaybeAwaitable[ToolGuardrailFunctionOutput]
     ]
-    """
-    The function that implements the guardrail logic.
-    """
-
     name: str | None = None
-    """
-    Optional name for the guardrail. If not provided, uses the function name.
-    """
 
     def get_name(self) -> str:
         return self.name or self.guardrail_function.__name__

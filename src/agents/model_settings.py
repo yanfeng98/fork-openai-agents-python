@@ -80,8 +80,6 @@ class ModelSettings:
     extra_args: dict[str, Any] | None = None
 
     def resolve(self, override: ModelSettings | None) -> ModelSettings:
-        """Produce a new ModelSettings by overlaying any non-None values from the
-        override on top of this instance."""
         if override is None:
             return self
 
@@ -91,7 +89,6 @@ class ModelSettings:
             if getattr(override, field.name) is not None
         }
 
-        # Handle extra_args merging specially - merge dictionaries instead of replacing
         if self.extra_args is not None or override.extra_args is not None:
             merged_args = {}
             if self.extra_args:

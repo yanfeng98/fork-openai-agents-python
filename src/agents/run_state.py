@@ -150,7 +150,6 @@ class RunState(Generic[TContext, TAgent]):
         previous_response_id: str | None = None,
         auto_previous_response_id: bool = False,
     ):
-        """Initialize a new RunState."""
         self._context = context
         self._original_input = _clone_original_input(original_input)
         self._current_agent = starting_agent
@@ -701,7 +700,6 @@ class RunState(Generic[TContext, TAgent]):
         )
 
     def set_trace(self, trace: Trace | None) -> None:
-        """Capture trace metadata for serialization/resumption."""
         self._trace_state = TraceState.from_trace(trace)
 
     def _serialize_trace_data(self, *, include_tracing_api_key: bool) -> dict[str, Any] | None:
@@ -2303,7 +2301,6 @@ def _deserialize_items(
 
 
 def _clone_original_input(original_input: str | list[Any]) -> str | list[Any]:
-    """Return a deep copy of the original input so later mutations don't leak into saved state."""
     if isinstance(original_input, str):
         return original_input
     return copy.deepcopy(original_input)

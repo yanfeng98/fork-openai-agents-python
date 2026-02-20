@@ -492,7 +492,6 @@ class AgentRunner:
                 generated_items = run_state._generated_items
                 session_items = list(run_state._session_items)
                 model_responses = run_state._model_responses
-                # Cast to the correct type since we know this is TContext
                 context_wrapper = cast(RunContextWrapper[TContext], run_state._context)
             else:
                 current_turn = 0
@@ -547,7 +546,6 @@ class AgentRunner:
                 )
 
             if session_persistence_enabled and session_input_items_for_persistence:
-                # Capture the exact input saved so it can be rewound on conversation lock retries.
                 last_saved_input_snapshot_for_rewind = list(session_input_items_for_persistence)
                 await save_result_to_session(
                     session,

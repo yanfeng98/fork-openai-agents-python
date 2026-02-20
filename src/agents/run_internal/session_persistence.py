@@ -203,13 +203,6 @@ async def save_result_to_session(
     response_id: str | None = None,
     store: bool | None = None,
 ) -> int:
-    """
-    Persist a turn to the session store, keeping track of what was already saved so retries
-    during streaming do not duplicate tool outputs or inputs.
-
-    Returns:
-        The number of new run items persisted for this call.
-    """
     already_persisted = run_state._current_turn_persisted_item_count if run_state else 0
 
     if session is None:
@@ -508,20 +501,13 @@ async def wait_for_session_cleanup(
     )
 
 
-# --------------------------
-# Private helpers
-# --------------------------
-
-
 def _ignore_ids_for_matching(session: Session) -> bool:
-    """Return whether session fingerprinting should ignore item IDs."""
     return isinstance(session, OpenAIConversationsSession) or getattr(
         session, "_ignore_ids_for_matching", False
     )
 
 
 def _sanitize_openai_conversation_item(item: TResponseInputItem) -> TResponseInputItem:
-    """Remove provider-specific fields before fingerprinting or persistence."""
     if isinstance(item, dict):
         clean_item = dict(item)
         clean_item.pop("id", None)
@@ -531,7 +517,6 @@ def _sanitize_openai_conversation_item(item: TResponseInputItem) -> TResponseInp
 
 
 def _fingerprint_or_repr(item: TResponseInputItem, *, ignore_ids_for_matching: bool) -> str:
-    """Fingerprint an item or fall back to repr when unavailable."""
     return fingerprint_input_item(item, ignore_ids_for_matching=ignore_ids_for_matching) or repr(
         item
     )

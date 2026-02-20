@@ -163,17 +163,12 @@ async def initialize_computer_tools(
 
 
 def get_mapping_or_attr(target: Any, key: str) -> Any:
-    """Allow mapping-or-attribute access so tool payloads can be dicts or objects."""
     if isinstance(target, Mapping):
         return target.get(key)
     return getattr(target, key, None)
 
 
 def extract_tool_call_id(raw: Any) -> str | None:
-    """Return a call ID from tool call payloads or approval items."""
-    # OpenAI tool call payloads are documented to include a call_id/id so outputs can be matched.
-    # See https://platform.openai.com/docs/guides/function-calling
-    # We still guard against missing IDs to avoid hard failures on malformed or non-OpenAI inputs.
     if isinstance(raw, Mapping):
         candidate = raw.get("call_id") or raw.get("id")
         return candidate if isinstance(candidate, str) else None
@@ -635,7 +630,6 @@ async def resolve_approval_rejection_message(
     tool_name: str,
     call_id: str,
 ) -> str:
-    """Resolve model-visible output text for approval rejections."""
     formatter = run_config.tool_error_formatter
     if formatter is None:
         return REJECTION_MESSAGE
@@ -675,7 +669,6 @@ async def function_needs_approval(
     context_wrapper: RunContextWrapper[Any],
     tool_call: ResponseFunctionToolCall,
 ) -> bool:
-    """Evaluate a function tool's needs_approval setting with parsed args."""
     parsed_args: dict[str, Any] = {}
     if callable(function_tool.needs_approval):
         try:
@@ -803,7 +796,6 @@ def collect_manual_mcp_approvals(
 
 
 def index_approval_items_by_call_id(items: Sequence[RunItem]) -> dict[str, ToolApprovalItem]:
-    """Build a mapping of tool call IDs to pending approval items."""
     approvals: dict[str, ToolApprovalItem] = {}
     for item in items:
         if not isinstance(item, ToolApprovalItem):

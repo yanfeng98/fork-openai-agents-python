@@ -18,32 +18,16 @@ if TYPE_CHECKING:
 
 @dataclass
 class GuardrailFunctionOutput:
-    """The output of a guardrail function."""
 
     output_info: Any
-    """
-    Optional information about the guardrail's output. For example, the guardrail could include
-    information about the checks it performed and granular results.
-    """
-
     tripwire_triggered: bool
-    """
-    Whether the tripwire was triggered. If triggered, the agent's execution will be halted.
-    """
 
 
 @dataclass
 class InputGuardrailResult:
-    """The result of a guardrail run."""
 
     guardrail: InputGuardrail[Any]
-    """
-    The guardrail that was run.
-    """
-
     output: GuardrailFunctionOutput
-    """The output of the guardrail function."""
-
 
 @dataclass
 class OutputGuardrailResult:

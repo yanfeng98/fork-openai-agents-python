@@ -210,19 +210,10 @@ class FunctionToolResult:
 
 @dataclass
 class FunctionTool:
-    """A tool that wraps a function. In most cases, you should use  the `function_tool` helpers to
-    create a FunctionTool, as they let you easily wrap a Python function.
-    """
 
     name: str
-    """The name of the tool, as shown to the LLM. Generally the name of the function."""
-
     description: str
-    """A description of the tool, as shown to the LLM."""
-
     params_json_schema: dict[str, Any]
-    """The JSON schema for the tool's parameters."""
-
     on_invoke_tool: Callable[[ToolContext[Any], str], Awaitable[Any]]
     """A function that invokes the tool with the given context and parameters. The params passed
     are:
@@ -257,11 +248,6 @@ class FunctionTool:
     needs_approval: (
         bool | Callable[[RunContextWrapper[Any], dict[str, Any], str], Awaitable[bool]]
     ) = False
-    """Whether the tool needs approval before execution. If True, the run will be interrupted
-    and the tool call will need to be approved using RunState.approve() or rejected using
-    RunState.reject() before continuing. Can be a bool (always/never needs approval) or a
-    function that takes (run_context, tool_parameters, call_id) and returns whether this
-    specific call needs approval."""
 
     # Keep timeout fields after needs_approval to preserve positional constructor compatibility.
     timeout_seconds: float | None = None

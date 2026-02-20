@@ -33,7 +33,6 @@ class OpenAIConversationsSession(SessionABC):
         _openai_client = openai_client
         if _openai_client is None:
             _openai_client = get_default_openai_client() or AsyncOpenAI()
-        # this never be None here
         self._openai_client: AsyncOpenAI = _openai_client
 
     @property

@@ -7,7 +7,6 @@ def time_iso() -> str:
 
 
 def gen_trace_id() -> str:
-    """Generate a new trace ID."""
     return get_trace_provider().gen_trace_id()
 
 

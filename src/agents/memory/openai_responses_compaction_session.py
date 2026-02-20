@@ -27,10 +27,6 @@ OpenAIResponsesCompactionMode = Literal["previous_response_id", "input", "auto"]
 def select_compaction_candidate_items(
     items: list[TResponseInputItem],
 ) -> list[TResponseInputItem]:
-    """Select compaction candidate items.
-
-    Excludes user messages and compaction items.
-    """
 
     def _is_user_message(item: TResponseInputItem) -> bool:
         if not isinstance(item, dict):
@@ -49,12 +45,10 @@ def select_compaction_candidate_items(
 
 
 def default_should_trigger_compaction(context: dict[str, Any]) -> bool:
-    """Default decision: compact when >= 10 candidate items exist."""
     return len(context["compaction_candidate_items"]) >= DEFAULT_COMPACTION_THRESHOLD
 
 
 def is_openai_model_name(model: str) -> bool:
-    """Validate model name follows OpenAI conventions."""
     trimmed = model.strip()
     if not trimmed:
         return False
@@ -63,7 +57,6 @@ def is_openai_model_name(model: str) -> bool:
     without_ft_prefix = trimmed[3:] if trimmed.startswith("ft:") else trimmed
     root = without_ft_prefix.split(":", 1)[0]
 
-    # Allow gpt-* and o* models
     if root.startswith("gpt-"):
         return True
     if root.startswith("o") and root[1:2].isdigit():
@@ -90,22 +83,6 @@ class OpenAIResponsesCompactionSession(SessionABC, OpenAIResponsesCompactionAwar
         compaction_mode: OpenAIResponsesCompactionMode = "auto",
         should_trigger_compaction: Callable[[dict[str, Any]], bool] | None = None,
     ):
-        """Initialize the compaction session.
-
-        Args:
-            session_id: Identifier for this session.
-            underlying_session: Session store that holds the compacted history. Cannot be
-                OpenAIConversationsSession.
-            client: OpenAI client for responses.compact API calls. Defaults to
-                get_default_openai_client() or new AsyncOpenAI().
-            model: Model to use for responses.compact. Defaults to "gpt-4.1". Must be an
-                OpenAI model name (gpt-*, o*, or ft:gpt-*).
-            compaction_mode: Controls how the compaction request provides conversation
-                history. "auto" (default) uses input when the last response was not
-                stored or no response_id is available.
-            should_trigger_compaction: Custom decision hook. Defaults to triggering when
-                10+ compaction candidates exist.
-        """
         if isinstance(underlying_session, OpenAIConversationsSession):
             raise ValueError(
                 "OpenAIResponsesCompactionSession cannot wrap OpenAIConversationsSession "
@@ -124,7 +101,6 @@ class OpenAIResponsesCompactionSession(SessionABC, OpenAIResponsesCompactionAwar
             should_trigger_compaction or default_should_trigger_compaction
         )
 
-        # cache for incremental candidate tracking
         self._compaction_candidate_items: list[TResponseInputItem] | None = None
         self._session_items: list[TResponseInputItem] | None = None
         self._response_id: str | None = None
@@ -155,7 +131,6 @@ class OpenAIResponsesCompactionSession(SessionABC, OpenAIResponsesCompactionAwar
         return _resolve_compaction_mode(mode, response_id=response_id, store=store)
 
     async def run_compaction(self, args: OpenAIResponsesCompactionArgs | None = None) -> None:
-        """Run compaction using responses.compact API."""
         if args and args.get("response_id"):
             self._response_id = args["response_id"]
         requested_mode = args.get("compaction_mode") if args else None
@@ -218,8 +193,6 @@ class OpenAIResponsesCompactionSession(SessionABC, OpenAIResponsesCompactionAwar
                 if isinstance(item, dict):
                     output_items.append(item)
                 else:
-                    # Suppress Pydantic literal warnings: responses.compact can return
-                    # user-style input_text content inside ResponseOutputMessage.
                     output_items.append(
                         item.model_dump(exclude_unset=True, warnings=False)  # type: ignore
                     )
@@ -290,7 +263,6 @@ class OpenAIResponsesCompactionSession(SessionABC, OpenAIResponsesCompactionAwar
     async def _ensure_compaction_candidates(
         self,
     ) -> tuple[list[TResponseInputItem], list[TResponseInputItem]]:
-        """Lazy-load and cache compaction candidates."""
         if self._compaction_candidate_items is not None and self._session_items is not None:
             return (self._compaction_candidate_items[:], self._session_items[:])
 

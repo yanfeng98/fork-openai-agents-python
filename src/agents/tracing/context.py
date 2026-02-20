@@ -8,7 +8,6 @@ from .traces import Trace
 
 
 class TraceCtxManager:
-    """Create a trace when none exists and manage its lifecycle for a run."""
 
     def __init__(
         self,

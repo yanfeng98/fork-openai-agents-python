@@ -103,7 +103,6 @@ def normalize_resumed_input(
 
 
 def fingerprint_input_item(item: Any, *, ignore_ids_for_matching: bool = False) -> str | None:
-    """Hashable fingerprint used to dedupe or rewind input items across resumes."""
     if item is None:
         return None
 
@@ -181,7 +180,6 @@ def function_rejection_item(
     rejection_message: str = REJECTION_MESSAGE,
     scope_id: str | None = None,
 ) -> ToolCallOutputItem:
-    """Build a ToolCallOutputItem representing a rejected function tool call."""
     if isinstance(tool_call, ResponseFunctionToolCall):
         drop_agent_tool_run_result(tool_call, scope_id=scope_id)
     return ToolCallOutputItem(

@@ -658,7 +658,6 @@ async def resolve_interrupted_turn(
     run_state: RunState | None = None,
     nest_handoff_history_fn: Callable[..., HandoffInputData] | None = None,
 ) -> SingleStepResult:
-    """Continue a turn that was previously interrupted waiting for tool approval."""
 
     execute_handoffs_call = execute_handoffs
 

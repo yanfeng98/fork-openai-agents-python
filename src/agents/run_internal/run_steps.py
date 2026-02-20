@@ -147,10 +147,7 @@ class NextStepRunAgain:
 
 @dataclass
 class NextStepInterruption:
-    """Represents an interruption in the agent run due to tool approval requests."""
-
     interruptions: list[ToolApprovalItem]
-    """The list of tool calls awaiting approval."""
 
 
 @dataclass

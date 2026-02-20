@@ -6,17 +6,12 @@ from typing import Any
 
 from ..exceptions import UserError
 
-# Keep this helper here so both run_internal and realtime can import it without
-# creating cross-package dependencies.
-
-
 async def evaluate_needs_approval_setting(
     needs_approval_setting: bool | Callable[..., Any],
     *args: Any,
     default: bool = False,
     strict: bool = True,
 ) -> bool:
-    """Return bool from a needs_approval setting that may be bool or callable/awaitable."""
     if isinstance(needs_approval_setting, bool):
         return needs_approval_setting
     if callable(needs_approval_setting):

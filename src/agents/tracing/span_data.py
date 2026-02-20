@@ -26,10 +26,6 @@ class SpanData(abc.ABC):
 
 
 class AgentSpanData(SpanData):
-    """
-    Represents an Agent Span in the trace.
-    Includes name, handoffs, tools, and output type.
-    """
 
     __slots__ = ("name", "handoffs", "tools", "output_type")
 

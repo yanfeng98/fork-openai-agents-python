@@ -240,7 +240,6 @@ class RunResult(RunResultBase):
     max_turns: int = 10
     """The maximum number of turns allowed for this run."""
     interruptions: list[ToolApprovalItem] = field(default_factory=list)
-    """Pending tool approval requests (interruptions) for this run."""
 
     def __post_init__(self) -> None:
         self._last_agent_ref = weakref.ref(self._last_agent)

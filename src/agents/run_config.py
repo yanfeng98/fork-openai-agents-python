@@ -54,25 +54,13 @@ CallModelInputFilter = Callable[[CallModelData[Any]], MaybeAwaitable[ModelInputD
 
 @dataclass
 class ToolErrorFormatterArgs(Generic[TContext]):
-    """Data passed to ``RunConfig.tool_error_formatter`` callbacks."""
 
     kind: Literal["approval_rejected"]
-    """The category of tool error being formatted."""
-
     tool_type: Literal["function", "computer", "shell", "apply_patch"]
-    """The tool runtime that produced the error."""
-
     tool_name: str
-    """The name of the tool that produced the error."""
-
     call_id: str
-    """The unique tool call identifier."""
-
     default_message: str
-    """The SDK default message for this error kind."""
-
     run_context: RunContextWrapper[TContext]
-    """The active run context for the current execution."""
 
 
 ToolErrorFormatter = Callable[[ToolErrorFormatterArgs[Any]], MaybeAwaitable[Optional[str]]]

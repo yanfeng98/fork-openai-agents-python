@@ -125,7 +125,6 @@ class OpenAIResponsesCompactionArgs(TypedDict, total=False):
 
 @runtime_checkable
 class OpenAIResponsesCompactionAwareSession(Session, Protocol):
-    """Protocol for session implementations that support responses compaction."""
 
     async def run_compaction(self, args: OpenAIResponsesCompactionArgs | None = None) -> None:
         """Run the compaction process for the session."""
@@ -135,7 +134,6 @@ class OpenAIResponsesCompactionAwareSession(Session, Protocol):
 def is_openai_responses_compaction_aware_session(
     session: Session | None,
 ) -> TypeGuard[OpenAIResponsesCompactionAwareSession]:
-    """Check if a session supports responses compaction."""
     if session is None:
         return False
     try:

@@ -13,36 +13,6 @@ from .scope import Scope
 
 
 class Trace(abc.ABC):
-    """A complete end-to-end workflow containing related spans and metadata.
-
-    A trace represents a logical workflow or operation (e.g., "Customer Service Query"
-    or "Code Generation") and contains all the spans (individual operations) that occur
-    during that workflow.
-
-    Example:
-        ```python
-        # Basic trace usage
-        with trace("Order Processing") as t:
-            validation_result = await Runner.run(validator, order_data)
-            if validation_result.approved:
-                await Runner.run(processor, order_data)
-
-        # Trace with metadata and grouping
-        with trace(
-            "Customer Service",
-            group_id="chat_123",
-            metadata={"customer": "user_456"}
-        ) as t:
-            result = await Runner.run(support_agent, query)
-        ```
-
-    Notes:
-        - Use descriptive workflow names
-        - Group related traces with consistent group_ids
-        - Add relevant metadata for filtering/analysis
-        - Use context managers for reliable cleanup
-        - Consider privacy when adding trace data
-    """
 
     @abc.abstractmethod
     def __enter__(self) -> Trace:
@@ -133,12 +103,6 @@ class Trace(abc.ABC):
         pass
 
     def to_json(self, *, include_tracing_api_key: bool = False) -> dict[str, Any] | None:
-        """Serialize trace metadata for persistence or transport.
-
-        Args:
-            include_tracing_api_key: When True, include the tracing API key. Defaults to False
-                to avoid persisting secrets unintentionally.
-        """
         exported = self.export()
         if exported is None:
             return None
@@ -150,7 +114,6 @@ class Trace(abc.ABC):
 
 @dataclass
 class TraceState:
-    """Serializable trace metadata for run state persistence."""
 
     trace_id: str | None = None
     workflow_name: str | None = None
@@ -220,19 +183,6 @@ class TraceState:
 
 
 class NoOpTrace(Trace):
-    """A no-op implementation of Trace that doesn't record any data.
-
-    Used when tracing is disabled but trace operations still need to work.
-    Maintains proper context management but doesn't store or export any data.
-
-    Example:
-        ```python
-        # When tracing is disabled, traces become NoOpTrace
-        with trace("Disabled Workflow") as t:
-            # Operations still work but nothing is recorded
-            await Runner.run(agent, "query")
-        ```
-    """
 
     def __init__(self):
         self._started = False
@@ -280,11 +230,6 @@ class NoOpTrace(Trace):
         return "no-op"
 
     def export(self) -> dict[str, Any] | None:
-        """Export the trace data as a dictionary.
-
-        Returns:
-            dict | None: Trace data in exportable format, or None if no data.
-        """
         return None
 
     @property
@@ -296,9 +241,6 @@ NO_OP_TRACE = NoOpTrace()
 
 
 class TraceImpl(Trace):
-    """
-    A trace that will be recorded by the tracing library.
-    """
 
     __slots__ = (
         "_name",
