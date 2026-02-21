@@ -60,16 +60,10 @@ class HttpClientFactory(Protocol):
 
 @dataclass
 class ToolFilterContext:
-    """Context information available to tool filter functions."""
 
     run_context: RunContextWrapper[Any]
-    """The current run context."""
-
     agent: AgentBase
-    """The agent that is requesting the tool list."""
-
     server_name: str
-    """The name of the MCP server."""
 
 
 if TYPE_CHECKING:
@@ -88,15 +82,9 @@ Returns:
 
 
 class ToolFilterStatic(TypedDict):
-    """Static tool filter configuration using allowlists and blocklists."""
 
     allowed_tool_names: NotRequired[list[str]]
-    """Optional list of tool names to allow (whitelist).
-    If set, only these tools will be available."""
-
     blocked_tool_names: NotRequired[list[str]]
-    """Optional list of tool names to exclude (blacklist).
-    If set, these tools will be filtered out."""
 
 
 if TYPE_CHECKING:
@@ -108,19 +96,11 @@ else:
 
 @dataclass
 class MCPToolMetaContext:
-    """Context information available to MCP tool meta resolver functions."""
 
     run_context: RunContextWrapper[Any]
-    """The current run context."""
-
     server_name: str
-    """The name of the MCP server."""
-
     tool_name: str
-    """The name of the tool being invoked."""
-
     arguments: dict[str, Any] | None
-    """The parsed tool arguments."""
 
 
 if TYPE_CHECKING:
@@ -168,7 +148,6 @@ def create_static_tool_filter(
 
 
 class MCPUtil:
-    """Set of utilities for interop between MCP and Agents SDK tools."""
 
     @classmethod
     async def get_all_function_tools(
@@ -179,7 +158,6 @@ class MCPUtil:
         agent: AgentBase,
         failure_error_function: ToolErrorFunction | None = default_tool_error_function,
     ) -> list[Tool]:
-        """Get all function tools from a list of MCP servers."""
         tools = []
         tool_names: set[str] = set()
         for server in servers:
@@ -210,7 +188,6 @@ class MCPUtil:
         agent: AgentBase,
         failure_error_function: ToolErrorFunction | None = default_tool_error_function,
     ) -> list[Tool]:
-        """Get all function tools from a single MCP server."""
 
         with mcp_tools_span(server=server.name) as span:
             tools = await server.list_tools(run_context, agent)
@@ -236,20 +213,12 @@ class MCPUtil:
         agent: AgentBase | None = None,
         failure_error_function: ToolErrorFunction | None = default_tool_error_function,
     ) -> FunctionTool:
-        """Convert an MCP tool to an Agents SDK function tool.
-
-        The ``agent`` parameter is optional for backward compatibility with older
-        call sites that used ``MCPUtil.to_function_tool(tool, server, strict)``.
-        When omitted, this helper preserves the historical behavior and leaves
-        ``needs_approval`` disabled.
-        """
         invoke_func_impl = functools.partial(cls.invoke_mcp_tool, server, tool)
         effective_failure_error_function = server._get_failure_error_function(
             failure_error_function
         )
         schema, is_strict = tool.inputSchema, False
 
-        # MCP spec doesn't require the inputSchema to have `properties`, but OpenAI spec does.
         if "properties" not in schema:
             schema["properties"] = {}
 
@@ -260,9 +229,6 @@ class MCPUtil:
             except Exception as e:
                 logger.info(f"Error converting MCP schema to strict mode: {e}")
 
-        # Wrap the invoke function with error handling, similar to regular function tools.
-        # This ensures that MCP tool errors (like timeouts) are handled gracefully instead
-        # of halting the entire agent flow.
         async def invoke_func(ctx: ToolContext[Any], input_json: str) -> ToolOutput:
             try:
                 return await invoke_func_impl(ctx, input_json)
@@ -270,12 +236,10 @@ class MCPUtil:
                 if effective_failure_error_function is None:
                     raise
 
-                # Use configured error handling function to convert exception to error message.
                 result = effective_failure_error_function(ctx, e)
                 if inspect.isawaitable(result):
                     result = await result
 
-                # Attach error to tracing span.
                 _error_tracing.attach_error_to_current_span(
                     SpanError(
                         message="Error running tool (non-fatal)",
@@ -286,7 +250,6 @@ class MCPUtil:
                     )
                 )
 
-                # Log the error.
                 if _debug.DONT_LOG_TOOL_DATA:
                     logger.debug(f"MCP tool {tool.name} failed")
                 else:
@@ -362,7 +325,6 @@ class MCPUtil:
         *,
         meta: dict[str, Any] | None = None,
     ) -> ToolOutput:
-        """Invoke an MCP tool and return the result as ToolOutput."""
         try:
             json_data: dict[str, Any] = json.loads(input_json) if input_json else {}
         except Exception as e:
@@ -387,7 +349,6 @@ class MCPUtil:
             else:
                 result = await server.call_tool(tool.name, json_data, meta=merged_meta)
         except UserError:
-            # Re-raise UserError as-is (it already has a good message)
             raise
         except Exception as e:
             logger.error(f"Error invoking MCP tool {tool.name} on server '{server.name}': {e}")
@@ -400,7 +361,6 @@ class MCPUtil:
         else:
             logger.debug(f"MCP tool {tool.name} returned {result}")
 
-        # If structured content is requested and available, use it exclusively
         tool_output: ToolOutput
         if server.use_structured_content and result.structuredContent:
             tool_output = json.dumps(result.structuredContent)
@@ -416,7 +376,6 @@ class MCPUtil:
                         )
                     )
                 else:
-                    # Fall back to regular text content
                     tool_output_list.append(
                         ToolOutputTextDict(type="text", text=str(item.model_dump(mode="json")))
                     )

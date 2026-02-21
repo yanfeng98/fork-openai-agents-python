@@ -148,13 +148,6 @@ class Span(abc.ABC, Generic[TSpanData]):
 
 
 class NoOpSpan(Span[TSpanData]):
-    """A no-op implementation of Span that doesn't record any data.
-
-    Used when tracing is disabled but span operations still need to work.
-
-    Args:
-        span_data: The operation-specific data for this span.
-    """
 
     __slots__ = ("_span_data", "_prev_span_token")
 

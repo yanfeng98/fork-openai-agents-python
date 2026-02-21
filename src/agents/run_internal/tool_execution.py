@@ -177,7 +177,6 @@ def extract_tool_call_id(raw: Any) -> str | None:
 
 
 def extract_shell_call_id(tool_call: Any) -> str:
-    """Ensure shell calls include a call_id before executing them."""
     value = extract_tool_call_id(tool_call)
     if not value:
         raise ModelBehaviorError("Shell call is missing call_id.")
@@ -185,7 +184,6 @@ def extract_shell_call_id(tool_call: Any) -> str:
 
 
 def coerce_shell_call(tool_call: Any) -> ShellCallData:
-    """Normalize a shell call payload into ShellCallData for consistent execution."""
     call_id = extract_shell_call_id(tool_call)
     action_payload = get_mapping_or_attr(tool_call, "action")
     if action_payload is None:

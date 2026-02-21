@@ -2,7 +2,6 @@ from .setup import get_trace_provider
 
 
 def time_iso() -> str:
-    """Return the current time in ISO 8601 format."""
     return get_trace_provider().time_iso()
 
 

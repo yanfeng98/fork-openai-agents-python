@@ -195,7 +195,6 @@ def shell_rejection_item(
     *,
     rejection_message: str = REJECTION_MESSAGE,
 ) -> ToolCallOutputItem:
-    """Build a ToolCallOutputItem representing a rejected shell call."""
     rejection_output: dict[str, Any] = {
         "stdout": "",
         "stderr": rejection_message,

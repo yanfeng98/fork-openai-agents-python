@@ -23,6 +23,3 @@ flag to enable logging them.
 """
 
 DONT_LOG_TOOL_DATA = _load_dont_log_tool_data()
-"""By default we don't log tool call inputs/outputs, to prevent exposing sensitive information. Set
-this flag to enable logging them.
-"""

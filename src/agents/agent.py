@@ -135,18 +135,9 @@ class StopAtTools(TypedDict):
 
 
 class MCPConfig(TypedDict):
-    """Configuration for MCP servers."""
 
     convert_schemas_to_strict: NotRequired[bool]
-    """If True, we will attempt to convert the MCP schemas to strict-mode schemas. This is a
-    best-effort conversion, so some schemas may not be convertible. Defaults to False.
-    """
-
     failure_error_function: NotRequired[ToolErrorFunction | None]
-    """Optional function to convert MCP tool failures into model-visible messages. If explicitly
-    set to None, tool errors will be raised instead. If unset, defaults to
-    default_tool_error_function.
-    """
 
 
 @dataclass
@@ -159,7 +150,6 @@ class AgentBase(Generic[TContext]):
     mcp_config: MCPConfig = field(default_factory=lambda: MCPConfig())
 
     async def get_mcp_tools(self, run_context: RunContextWrapper[TContext]) -> list[Tool]:
-        """Fetches the available tools from the MCP servers."""
         convert_schemas_to_strict = self.mcp_config.get("convert_schemas_to_strict", False)
         failure_error_function = self.mcp_config.get(
             "failure_error_function", default_tool_error_function
@@ -173,7 +163,6 @@ class AgentBase(Generic[TContext]):
         )
 
     async def get_all_tools(self, run_context: RunContextWrapper[TContext]) -> list[Tool]:
-        """All agent tools, including MCP tools and function tools."""
         mcp_tools = await self.get_mcp_tools(run_context)
 
         async def _check_tool_enabled(tool: Tool) -> bool:

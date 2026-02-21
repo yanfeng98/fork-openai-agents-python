@@ -72,7 +72,6 @@ if TYPE_CHECKING:
 
 
 class MCPServer(abc.ABC):
-    """Base class for Model Context Protocol servers."""
 
     def __init__(
         self,
@@ -81,23 +80,6 @@ class MCPServer(abc.ABC):
         failure_error_function: ToolErrorFunction | None | _UnsetType = _UNSET,
         tool_meta_resolver: MCPToolMetaResolver | None = None,
     ):
-        """
-        Args:
-            use_structured_content: Whether to use `tool_result.structured_content` when calling an
-                MCP tool.Defaults to False for backwards compatibility - most MCP servers still
-                include the structured content in the `tool_result.content`, and using it by
-                default will cause duplicate content. You can set this to True if you know the
-                server will not duplicate the structured content in the `tool_result.content`.
-            require_approval: Approval policy for tools on this server. Accepts "always"/"never",
-                a dict of tool names to those values, a boolean, or an object with always/never
-                tool lists (mirroring TS requireApproval). Normalized into a needs_approval policy.
-            failure_error_function: Optional function used to convert MCP tool failures into
-                a model-visible error message. If explicitly set to None, tool errors will be
-                raised instead of converted. If left unset, the agent-level configuration (or
-                SDK default) will be used.
-            tool_meta_resolver: Optional callable that produces MCP request metadata (`_meta`) for
-                tool calls. It is invoked by the Agents SDK before calling `call_tool`.
-        """
         self.use_structured_content = use_structured_content
         self._needs_approval_policy = self._normalize_needs_approval(
             require_approval=require_approval
@@ -132,7 +114,6 @@ class MCPServer(abc.ABC):
         run_context: RunContextWrapper[Any] | None = None,
         agent: AgentBase | None = None,
     ) -> list[MCPTool]:
-        """List the tools available on the server."""
         pass
 
     @abc.abstractmethod
@@ -230,7 +211,6 @@ class MCPServer(abc.ABC):
         tool: MCPTool,
         agent: AgentBase | None,
     ) -> bool | Callable[[RunContextWrapper[Any], dict[str, Any], str], Awaitable[bool]]:
-        """Return a FunctionTool.needs_approval value for a given MCP tool."""
 
         policy = self._needs_approval_policy
 
@@ -256,7 +236,6 @@ class MCPServer(abc.ABC):
     def _get_failure_error_function(
         self, agent_failure_error_function: ToolErrorFunction | None
     ) -> ToolErrorFunction | None:
-        """Return the effective error handler for MCP tool failures."""
         if self._failure_error_function is _UNSET:
             return agent_failure_error_function
         return cast(ToolErrorFunction | None, self._failure_error_function)
@@ -343,15 +322,12 @@ class _MCPServerWithClientSession(MCPServer, abc.ABC):
         run_context: RunContextWrapper[Any] | None = None,
         agent: AgentBase | None = None,
     ) -> list[MCPTool]:
-        """Apply the tool filter to the list of tools."""
         if self.tool_filter is None:
             return tools
 
-        # Handle static tool filter
         if isinstance(self.tool_filter, dict):
             return self._apply_static_tool_filter(tools, self.tool_filter)
 
-        # Handle callable tool filter (dynamic filter)
         else:
             if run_context is None or agent is None:
                 raise UserError("run_context and agent are required for dynamic tool filtering")
@@ -360,15 +336,12 @@ class _MCPServerWithClientSession(MCPServer, abc.ABC):
     def _apply_static_tool_filter(
         self, tools: list[MCPTool], static_filter: ToolFilterStatic
     ) -> list[MCPTool]:
-        """Apply static tool filtering based on allowlist and blocklist."""
         filtered_tools = tools
 
-        # Apply allowed_tool_names filter (whitelist)
         if "allowed_tool_names" in static_filter:
             allowed_names = static_filter["allowed_tool_names"]
             filtered_tools = [t for t in filtered_tools if t.name in allowed_names]
 
-        # Apply blocked_tool_names filter (blacklist)
         if "blocked_tool_names" in static_filter:
             blocked_names = static_filter["blocked_tool_names"]
             filtered_tools = [t for t in filtered_tools if t.name not in blocked_names]
@@ -381,14 +354,11 @@ class _MCPServerWithClientSession(MCPServer, abc.ABC):
         run_context: RunContextWrapper[Any],
         agent: AgentBase,
     ) -> list[MCPTool]:
-        """Apply dynamic tool filtering using a callable filter function."""
 
-        # Ensure we have a callable filter
         if not callable(self.tool_filter):
             raise ValueError("Tool filter must be callable for dynamic filtering")
         tool_filter_func = self.tool_filter
 
-        # Create filter context
         filter_context = ToolFilterContext(
             run_context=run_context,
             agent=agent,
@@ -398,7 +368,6 @@ class _MCPServerWithClientSession(MCPServer, abc.ABC):
         filtered_tools = []
         for tool in tools:
             try:
-                # Call the filter function with context
                 result = tool_filter_func(filter_context, tool)
 
                 if inspect.isawaitable(result):
@@ -412,7 +381,6 @@ class _MCPServerWithClientSession(MCPServer, abc.ABC):
                 logger.error(
                     f"Error applying tool filter to tool '{tool.name}' on server '{self.name}': {e}"
                 )
-                # On error, exclude the tool for safety
                 continue
 
         return filtered_tools
@@ -554,24 +522,20 @@ class _MCPServerWithClientSession(MCPServer, abc.ABC):
         run_context: RunContextWrapper[Any] | None = None,
         agent: AgentBase | None = None,
     ) -> list[MCPTool]:
-        """List the tools available on the server."""
         if not self.session:
             raise UserError("Server not initialized. Make sure you call `connect()` first.")
         session = self.session
         assert session is not None
 
         try:
-            # Return from cache if caching is enabled, we have tools, and the cache is not dirty
             if self.cache_tools_list and not self._cache_dirty and self._tools_list:
                 tools = self._tools_list
             else:
-                # Fetch the tools from the server
                 result = await self._run_with_retries(lambda: session.list_tools())
                 self._tools_list = result.tools
                 self._cache_dirty = False
                 tools = self._tools_list
 
-            # Filter tools based on tool_filter
             filtered_tools = tools
             if self.tool_filter is not None:
                 filtered_tools = await self._apply_tool_filter(filtered_tools, run_context, agent)
@@ -593,7 +557,6 @@ class _MCPServerWithClientSession(MCPServer, abc.ABC):
         arguments: dict[str, Any] | None,
         meta: dict[str, Any] | None = None,
     ) -> CallToolResult:
-        """Invoke a tool on the server."""
         if not self.session:
             raise UserError("Server not initialized. Make sure you call `connect()` first.")
         session = self.session
@@ -621,7 +584,6 @@ class _MCPServerWithClientSession(MCPServer, abc.ABC):
     def _validate_required_parameters(
         self, tool_name: str, arguments: dict[str, Any] | None
     ) -> None:
-        """Validate required tool parameters from cached MCP tool schemas before invocation."""
         if self._tools_list is None:
             return
 

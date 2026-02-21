@@ -249,7 +249,6 @@ class BatchTraceProcessor(TracingProcessor):
         pass
 
     def on_span_start(self, span: Span[Any]) -> None:
-        # We send spans via on_span_end, so we don't need to do anything here.
         pass
 
     def on_span_end(self, span: Span[Any]) -> None:

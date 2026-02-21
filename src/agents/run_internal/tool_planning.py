@@ -471,7 +471,6 @@ async def _select_function_tool_runs_for_resume(
     pending_interruption_adder: Callable[[ToolApprovalItem], None],
     pending_item_builder: Callable[[ToolRunFunction], ToolApprovalItem],
 ) -> list[ToolRunFunction]:
-    """Filter function tool runs during resume, honoring approvals and outputs."""
     selected: list[ToolRunFunction] = []
     for run in runs:
         call_id = run.tool_call.call_id

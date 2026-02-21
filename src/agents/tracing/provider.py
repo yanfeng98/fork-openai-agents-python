@@ -225,14 +225,12 @@ class DefaultTraceProvider(TraceProvider):
             self._disabled = self._manual_disabled
 
     def time_iso(self) -> str:
-        """Return the current time in ISO 8601 format."""
         return datetime.now(timezone.utc).isoformat()
 
     def gen_trace_id(self) -> str:
         return f"trace_{uuid.uuid4().hex}"
 
     def gen_span_id(self) -> str:
-        """Generate a new span ID."""
         return f"span_{uuid.uuid4().hex[:24]}"
 
     def gen_group_id(self) -> str:
@@ -273,9 +271,6 @@ class DefaultTraceProvider(TraceProvider):
         parent: Trace | Span[Any] | None = None,
         disabled: bool = False,
     ) -> Span[TSpanData]:
-        """
-        Create a new span.
-        """
         self._refresh_disabled_flag()
         tracing_api_key: str | None = None
         trace_metadata: dict[str, Any] | None = None
@@ -301,7 +296,6 @@ class DefaultTraceProvider(TraceProvider):
             parent_id = current_span.span_id if current_span else None
             trace_id = current_trace.trace_id
             tracing_api_key = current_trace.tracing_api_key
-            # Trace is an interface; custom implementations may omit metadata.
             trace_metadata = getattr(current_trace, "metadata", None)
 
         elif isinstance(parent, Trace):
@@ -311,7 +305,6 @@ class DefaultTraceProvider(TraceProvider):
             trace_id = parent.trace_id
             parent_id = None
             tracing_api_key = parent.tracing_api_key
-            # Trace is an interface; custom implementations may omit metadata.
             trace_metadata = getattr(parent, "metadata", None)
         elif isinstance(parent, Span):
             if isinstance(parent, NoOpSpan):

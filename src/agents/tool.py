@@ -78,7 +78,6 @@ class ToolOutputText(BaseModel):
 
 
 class ToolOutputTextDict(TypedDict, total=False):
-    """TypedDict variant for text tool outputs."""
 
     type: Literal["text"]
     text: str
@@ -105,7 +104,6 @@ class ToolOutputImage(BaseModel):
 
 
 class ToolOutputImageDict(TypedDict, total=False):
-    """TypedDict variant for image tool outputs."""
 
     type: Literal["image"]
     image_url: NotRequired[str]
@@ -215,62 +213,20 @@ class FunctionTool:
     description: str
     params_json_schema: dict[str, Any]
     on_invoke_tool: Callable[[ToolContext[Any], str], Awaitable[Any]]
-    """A function that invokes the tool with the given context and parameters. The params passed
-    are:
-    1. The tool run context.
-    2. The arguments from the LLM, as a JSON string.
-
-    You must return a one of the structured tool output types (e.g. ToolOutputText, ToolOutputImage,
-    ToolOutputFileContent) or a string representation of the tool output, or a list of them,
-    or something we can call `str()` on.
-    In case of errors, you can either raise an Exception (which will cause the run to fail) or
-    return a string error message (which will be sent back to the LLM).
-    """
-
     strict_json_schema: bool = True
-    """Whether the JSON schema is in strict mode. We **strongly** recommend setting this to True,
-    as it increases the likelihood of correct JSON input."""
-
     is_enabled: bool | Callable[[RunContextWrapper[Any], AgentBase], MaybeAwaitable[bool]] = True
-    """Whether the tool is enabled. Either a bool or a Callable that takes the run context and agent
-    and returns whether the tool is enabled. You can use this to dynamically enable/disable a tool
-    based on your context/state."""
-
-    # Keep guardrail fields before needs_approval to preserve v0.7.0 positional
-    # constructor compatibility for public FunctionTool callers.
-    # Tool-specific guardrails.
     tool_input_guardrails: list[ToolInputGuardrail[Any]] | None = None
-    """Optional list of input guardrails to run before invoking this tool."""
-
     tool_output_guardrails: list[ToolOutputGuardrail[Any]] | None = None
-    """Optional list of output guardrails to run after invoking this tool."""
-
     needs_approval: (
         bool | Callable[[RunContextWrapper[Any], dict[str, Any], str], Awaitable[bool]]
     ) = False
 
-    # Keep timeout fields after needs_approval to preserve positional constructor compatibility.
     timeout_seconds: float | None = None
-    """Optional timeout (seconds) for each tool invocation."""
-
     timeout_behavior: ToolTimeoutBehavior = "error_as_result"
-    """How to handle timeout events.
-
-    - "error_as_result": return a model-visible timeout error string.
-    - "raise_exception": raise a ToolTimeoutError and fail the run.
-    """
-
     timeout_error_function: ToolErrorFunction | None = None
-    """Optional formatter for timeout errors when timeout_behavior is "error_as_result"."""
-
     _is_agent_tool: bool = field(default=False, init=False, repr=False)
-    """Internal flag indicating if this tool is an agent-as-tool."""
-
     _is_codex_tool: bool = field(default=False, init=False, repr=False)
-    """Internal flag indicating if this tool is a Codex tool wrapper."""
-
     _agent_instance: Any = field(default=None, init=False, repr=False)
-    """Internal reference to the agent instance if this is an agent-as-tool."""
 
     def __post_init__(self):
         if self.strict_json_schema:
@@ -326,13 +282,9 @@ class WebSearchTool:
 
 @dataclass(eq=False)
 class ComputerTool(Generic[ComputerT]):
-    """A hosted tool that lets the LLM control a computer."""
 
     computer: ComputerConfig[ComputerT]
-    """The computer implementation, or a factory that produces a computer per run."""
-
     on_safety_check: Callable[[ComputerToolSafetyCheckData], MaybeAwaitable[bool]] | None = None
-    """Optional callback to acknowledge computer tool safety checks."""
 
     def __post_init__(self) -> None:
         _store_computer_initializer(self)
@@ -751,7 +703,6 @@ class ShellResult:
 
 @dataclass
 class ShellActionRequest:
-    """Action payload for a next-generation shell call."""
 
     commands: list[str]
     timeout_ms: int | None = None
@@ -760,7 +711,6 @@ class ShellActionRequest:
 
 @dataclass
 class ShellCallData:
-    """Normalized shell call data provided to shell executors."""
 
     call_id: str
     action: ShellActionRequest
@@ -878,7 +828,6 @@ Tool = Union[
     ImageGenerationTool,
     CodeInterpreterTool,
 ]
-"""A tool that can be used in an agent."""
 
 
 def _extract_json_decode_error(error: BaseException) -> json.JSONDecodeError | None:
@@ -899,7 +848,6 @@ def _extract_tool_argument_json_error(error: Exception) -> json.JSONDecodeError 
 
 
 def default_tool_error_function(ctx: RunContextWrapper[Any], error: Exception) -> str:
-    """The default tool error function, which just returns a generic error message."""
     json_decode_error = _extract_tool_argument_json_error(error)
     if json_decode_error is not None:
         return (

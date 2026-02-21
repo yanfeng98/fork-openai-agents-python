@@ -9,9 +9,6 @@ if TYPE_CHECKING:
 
 
 class SpanData(abc.ABC):
-    """
-    Represents span data in the trace.
-    """
 
     @abc.abstractmethod
     def export(self) -> dict[str, Any]:
@@ -344,10 +341,6 @@ class SpeechGroupSpanData(SpanData):
 
 
 class MCPListToolsSpanData(SpanData):
-    """
-    Represents an MCP List Tools Span in the trace.
-    Includes server and result.
-    """
 
     __slots__ = (
         "server",
