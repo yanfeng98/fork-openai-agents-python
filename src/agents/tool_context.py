@@ -104,10 +104,6 @@ class ToolContext(RunContextWrapper[TContext]):
         *,
         run_config: RunConfig | None = None,
     ) -> ToolContext:
-        """
-        Create a ToolContext from a RunContextWrapper.
-        """
-        # Grab the names of the RunContextWrapper's init=True fields
         base_values: dict[str, Any] = {
             f.name: getattr(context, f.name) for f in fields(RunContextWrapper) if f.init
         }

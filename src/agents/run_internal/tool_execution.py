@@ -544,7 +544,6 @@ async def with_tool_function_span(
     tool_name: str,
     fn: Callable[[Span[Any] | None], Any],
 ) -> TToolSpanResult:
-    """Execute a tool callback in a function span when tracing is active."""
     if config.tracing_disabled or get_current_trace() is None:
         result = fn(None)
         return await result if inspect.isawaitable(result) else cast(TToolSpanResult, result)
@@ -745,7 +744,6 @@ def collect_manual_mcp_approvals(
     context_wrapper: RunContextWrapper[Any],
     existing_pending_by_call_id: Mapping[str, ToolApprovalItem] | None = None,
 ) -> tuple[list[MCPApprovalResponseItem], list[ToolApprovalItem]]:
-    """Bridge hosted MCP approval requests with manual approvals to keep state consistent."""
     pending_lookup = existing_pending_by_call_id or {}
     approved: list[MCPApprovalResponseItem] = []
     pending: list[ToolApprovalItem] = []
@@ -754,8 +752,6 @@ def collect_manual_mcp_approvals(
     for request in requests:
         request_item = get_mapping_or_attr(request, "request_item")
         request_id = extract_mcp_request_id_from_run(request)
-        # The Responses API returns mcp_approval_request items with an id to correlate approvals.
-        # See https://platform.openai.com/docs/guides/tools-connectors-mcp#approvals
         if request_id and request_id in seen_request_ids:
             continue
         if request_id:
@@ -831,7 +827,6 @@ async def execute_function_tool_calls(
 ) -> tuple[
     list[FunctionToolResult], list[ToolInputGuardrailResult], list[ToolOutputGuardrailResult]
 ]:
-    """Execute function tool calls with approvals, guardrails, and hooks."""
     tool_input_guardrail_results: list[ToolInputGuardrailResult] = []
     tool_output_guardrail_results: list[ToolOutputGuardrailResult] = []
     tool_state_scope_id = get_agent_tool_state_scope(context_wrapper)
@@ -1020,7 +1015,6 @@ async def execute_function_tool_calls(
                     agent=agent,
                 )
             else:
-                # Skip tool output until nested interruptions are resolved.
                 run_item = None
 
             function_tool_results.append(
@@ -1069,7 +1063,6 @@ async def execute_shell_calls(
     hooks: RunHooks[Any],
     config: RunConfig,
 ) -> list[RunItem]:
-    """Run shell tool calls serially and wrap outputs."""
     from .tool_actions import ShellAction
 
     results: list[RunItem] = []
@@ -1119,7 +1112,6 @@ async def execute_computer_actions(
     context_wrapper: RunContextWrapper[Any],
     config: RunConfig,
 ) -> list[RunItem]:
-    """Run computer actions serially and emit screenshot outputs."""
     from .tool_actions import ComputerAction
 
     results: list[RunItem] = []
@@ -1292,10 +1284,6 @@ async def execute_approved_tools(
                 generated_items.append(result.run_item)
 
 
-# --------------------------
-# Private helpers
-# --------------------------
-
 
 async def _execute_tool_input_guardrails(
     *,
@@ -1304,7 +1292,6 @@ async def _execute_tool_input_guardrails(
     agent: Agent[Any],
     tool_input_guardrail_results: list[ToolInputGuardrailResult],
 ) -> str | None:
-    """Execute input guardrails for a tool call and return a rejection message if any."""
     if not func_tool.tool_input_guardrails:
         return None
 
@@ -1339,7 +1326,6 @@ async def _execute_tool_output_guardrails(
     real_result: Any,
     tool_output_guardrail_results: list[ToolOutputGuardrailResult],
 ) -> Any:
-    """Execute output guardrails for a tool call and return the final result."""
     if not func_tool.tool_output_guardrails:
         return real_result
 

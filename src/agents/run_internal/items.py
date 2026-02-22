@@ -254,7 +254,6 @@ def extract_mcp_request_id(raw_item: Any) -> str | None:
 
 
 def extract_mcp_request_id_from_run(mcp_run: Any) -> str | None:
-    """Extract the hosted MCP request id from a streaming run item."""
     request_item = getattr(mcp_run, "request_item", None) or getattr(mcp_run, "requestItem", None)
     if isinstance(request_item, dict):
         provider_data = request_item.get("provider_data")

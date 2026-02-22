@@ -316,11 +316,8 @@ class MCPApprovalRequestItem(RunItemBase[McpApprovalRequest]):
 
 @dataclass
 class MCPApprovalResponseItem(RunItemBase[McpApprovalResponse]):
-    """Represents a response to an MCP approval request."""
 
     raw_item: McpApprovalResponse
-    """The raw MCP approval response."""
-
     type: Literal["mcp_approval_response_item"] = "mcp_approval_response_item"
 
 

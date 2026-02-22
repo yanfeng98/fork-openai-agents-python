@@ -81,7 +81,6 @@ __all__ = [
 
 
 def _serialize_trace_payload(payload: Any) -> str:
-    """Serialize tool payloads for tracing while tolerating non-JSON values."""
     if payload is None:
         return ""
     if isinstance(payload, str):
@@ -97,7 +96,6 @@ def _serialize_trace_payload(payload: Any) -> str:
 
 
 class ComputerAction:
-    """Execute computer tool actions and emit screenshot outputs with hooks fired."""
 
     @classmethod
     async def execute(
@@ -110,7 +108,6 @@ class ComputerAction:
         config: RunConfig,
         acknowledged_safety_checks: list[ComputerCallOutputAcknowledgedSafetyCheck] | None = None,
     ) -> RunItem:
-        """Run a computer action, capturing a screenshot and notifying hooks."""
 
         async def _run_action(span: Any | None) -> RunItem:
             if span and config.trace_include_sensitive_data:
@@ -187,7 +184,6 @@ class ComputerAction:
     async def _execute_action_and_capture(
         cls, computer: Any, tool_call: ResponseComputerToolCall
     ) -> str:
-        """Execute the computer action (sync or async drivers) and return the screenshot."""
 
         async def maybe_call(method_name: str, *args: Any) -> Any:
             method = getattr(computer, method_name, None)

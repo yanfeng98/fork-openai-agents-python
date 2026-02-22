@@ -16,12 +16,6 @@ TSpanData = TypeVar("TSpanData", bound=SpanData)
 
 
 class SpanError(TypedDict):
-    """Represents an error that occurred during span execution.
-
-    Attributes:
-        message: A human-readable error description
-        data: Optional dictionary containing additional error context
-    """
 
     message: str
     data: dict[str, Any] | None

@@ -14,7 +14,6 @@ _DATACLASS_KWARGS = {"slots": True} if sys.version_info >= (3, 10) else {}
 
 @dataclass(**_DATACLASS_KWARGS)
 class ApplyPatchOperation:
-    """Represents a single apply_patch editor operation requested by the model."""
 
     type: ApplyPatchOperationType
     path: str
@@ -24,7 +23,6 @@ class ApplyPatchOperation:
 
 @dataclass(**_DATACLASS_KWARGS)
 class ApplyPatchResult:
-    """Optional metadata returned by editor operations."""
 
     status: Literal["completed", "failed"] | None = None
     output: str | None = None
@@ -32,7 +30,6 @@ class ApplyPatchResult:
 
 @runtime_checkable
 class ApplyPatchEditor(Protocol):
-    """Host-defined editor that applies diffs on disk."""
 
     def create_file(
         self, operation: ApplyPatchOperation

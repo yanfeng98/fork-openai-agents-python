@@ -167,7 +167,6 @@ def _dedupe_tool_call_items(
 
 @_dc.dataclass
 class ToolExecutionPlan:
-    """Represents tool execution work to perform in a single turn."""
 
     function_runs: list[ToolRunFunction] = _dc.field(default_factory=list)
     computer_actions: list[ToolRunComputerAction] = _dc.field(default_factory=list)
@@ -186,7 +185,6 @@ class ToolExecutionPlan:
 def _partition_mcp_approval_requests(
     requests: Sequence[ToolRunMCPApprovalRequest],
 ) -> tuple[list[ToolRunMCPApprovalRequest], list[ToolRunMCPApprovalRequest]]:
-    """Split MCP approval requests into callback-handled and manual buckets."""
     with_callback: list[ToolRunMCPApprovalRequest] = []
     manual: list[ToolRunMCPApprovalRequest] = []
     for request in requests:
@@ -205,7 +203,6 @@ def _collect_mcp_approval_plan(
     approval_items_by_call_id: Mapping[str, ToolApprovalItem],
     pending_interruption_adder: Callable[[ToolApprovalItem], None],
 ) -> tuple[list[ToolRunMCPApprovalRequest], list[RunItem]]:
-    """Return MCP approval callback requests and approved responses."""
     approved_mcp_responses: list[RunItem] = []
     (
         mcp_requests_with_callback,
@@ -265,7 +262,6 @@ def _build_plan_for_resume_turn(
     shell_calls: list[ToolRunShellCall],
     apply_patch_calls: list[ToolRunApplyPatchCall],
 ) -> ToolExecutionPlan:
-    """Build a ToolExecutionPlan for a resumed turn."""
     mcp_requests_with_callback, approved_mcp_responses = _collect_mcp_approval_plan(
         processed_response=processed_response,
         agent=agent,
@@ -367,7 +363,6 @@ async def _collect_runs_by_approval(
     needs_approval_checker: Callable[[T], Awaitable[bool]] | None = None,
     output_exists_checker: Callable[[str], bool] | None = None,
 ) -> tuple[list[T], list[RunItem]]:
-    """Return approved runs and rejection items, adding pending approvals via callback."""
     approved_runs: list[T] = []
     rejection_items: list[RunItem] = []
     for run in runs:
@@ -426,7 +421,6 @@ def _apply_manual_mcp_approvals(
     approval_items_by_call_id: Mapping[str, ToolApprovalItem],
     pending_interruption_adder: Callable[[ToolApprovalItem], None],
 ) -> tuple[list[RunItem], list[ToolApprovalItem]]:
-    """Collect manual MCP approvals and record pending interruptions via callback."""
     approved_responses, pending_items = collect_manual_mcp_approvals(
         agent=agent,
         requests=requests,
@@ -524,7 +518,6 @@ async def _execute_tool_plan(
     list[RunItem],
     list[RunItem],
 ]:
-    """Execute tool runs captured in a ToolExecutionPlan."""
     if parallel:
         (
             (function_results, tool_input_guardrail_results, tool_output_guardrail_results),

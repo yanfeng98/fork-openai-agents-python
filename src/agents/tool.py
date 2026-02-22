@@ -188,22 +188,10 @@ ComputerConfig = Union[
 @dataclass
 class FunctionToolResult:
     tool: FunctionTool
-    """The tool that was run."""
-
     output: Any
-    """The output of the tool."""
-
     run_item: RunItem | None
-    """The run item that was produced as a result of the tool call.
-
-    This can be None when the tool run is interrupted and no output item should be emitted yet.
-    """
-
     interruptions: list[ToolApprovalItem] = field(default_factory=list)
-    """Interruptions from nested agent runs (for agent-as-tool)."""
-
-    agent_run_result: Any = None  # RunResult | None, but avoid circular import
-    """Nested agent run result (for agent-as-tool)."""
+    agent_run_result: Any = None
 
 
 @dataclass
@@ -395,19 +383,11 @@ async def dispose_resolved_computers(*, run_context: RunContextWrapper[Any]) -> 
 
 @dataclass
 class ComputerToolSafetyCheckData:
-    """Information about a computer tool safety check."""
 
     ctx_wrapper: RunContextWrapper[Any]
-    """The run context."""
-
     agent: Agent[Any]
-    """The agent performing the computer action."""
-
     tool_call: ResponseComputerToolCall
-    """The computer tool call."""
-
     safety_check: PendingSafetyCheck
-    """The pending safety check to acknowledge."""
 
 
 @dataclass
@@ -434,7 +414,6 @@ class MCPToolApprovalFunctionResult(TypedDict):
 MCPToolApprovalFunction = Callable[
     [MCPToolApprovalRequest], MaybeAwaitable[MCPToolApprovalFunctionResult]
 ]
-"""A function that approves or rejects a tool call."""
 
 
 ShellApprovalFunction = Callable[
@@ -491,19 +470,9 @@ Takes (run_context, approval_item) and returns approval decision.
 
 @dataclass
 class HostedMCPTool:
-    """A tool that allows the LLM to use a remote MCP server. The LLM will automatically list and
-    call tools, without requiring a round trip back to your code.
-    If you want to run MCP servers locally via stdio, in a VPC or other non-publicly-accessible
-    environment, or you just prefer to run tool calls locally, then you can instead use the servers
-    in `agents.mcp` and pass `Agent(mcp_servers=[...])` to the agent."""
 
     tool_config: Mcp
-    """The MCP tool config, which includes the server URL and other settings."""
-
     on_approval_request: MCPToolApprovalFunction | None = None
-    """An optional function that will be called if approval is requested for an MCP tool. If not
-    provided, you will need to manually add approvals/rejections to the input and call
-    `Runner.run(...)` again."""
 
     @property
     def name(self):
@@ -795,21 +764,11 @@ class ShellTool:
 
 @dataclass
 class ApplyPatchTool:
-    """Hosted apply_patch tool. Lets the model request file mutations via unified diffs."""
 
     editor: ApplyPatchEditor
     name: str = "apply_patch"
     needs_approval: bool | ApplyPatchApprovalFunction = False
-    """Whether the apply_patch tool needs approval before execution. If True, the run will be
-    interrupted and the tool call will need to be approved using RunState.approve() or rejected
-    using RunState.reject() before continuing. Can be a bool (always/never needs approval) or a
-    function that takes (run_context, operation, call_id) and returns whether this specific call
-    needs approval.
-    """
     on_approval: ApplyPatchOnApprovalFunction | None = None
-    """Optional handler to auto-approve or reject when approval is required.
-    If provided, it will be invoked immediately when an approval is needed.
-    """
 
     @property
     def type(self) -> str:
@@ -866,7 +825,6 @@ _FUNCTION_TOOL_TIMEOUT_BEHAVIORS: tuple[ToolTimeoutBehavior, ...] = (
 
 
 def default_tool_timeout_error_message(*, tool_name: str, timeout_seconds: float) -> str:
-    """Build the default message returned to the model when a tool times out."""
     return f"Tool '{tool_name}' timed out after {timeout_seconds:g} seconds."
 
 
@@ -876,7 +834,6 @@ async def invoke_function_tool(
     context: ToolContext[Any],
     arguments: str,
 ) -> Any:
-    """Invoke a function tool, enforcing timeout configuration when provided."""
     timeout_seconds = function_tool.timeout_seconds
     if timeout_seconds is None:
         return await function_tool.on_invoke_tool(context, arguments)

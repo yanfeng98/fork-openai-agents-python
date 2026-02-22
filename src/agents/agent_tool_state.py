@@ -134,7 +134,6 @@ def consume_agent_tool_run_result(
     *,
     scope_id: str | None = None,
 ) -> RunResult | RunResultStreaming | None:
-    """Return and drop the stored nested agent run result for the given tool call."""
     obj_id = id(tool_call)
     if _tool_call_obj_matches_scope(obj_id, scope_id=scope_id):
         run_result = _agent_tool_run_results_by_obj.pop(obj_id, None)

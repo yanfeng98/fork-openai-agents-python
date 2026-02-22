@@ -53,10 +53,6 @@ class AgentSpanData(SpanData):
 
 
 class FunctionSpanData(SpanData):
-    """
-    Represents a Function Span in the trace.
-    Includes input, output and MCP data (if applicable).
-    """
 
     __slots__ = ("name", "input", "output", "mcp_data")
 

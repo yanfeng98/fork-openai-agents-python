@@ -99,30 +99,15 @@ class ToolGuardrailFunctionOutput:
 
 @dataclass
 class ToolInputGuardrailData:
-    """Input data passed to a tool input guardrail function."""
 
     context: ToolContext[Any]
-    """
-    The tool context containing information about the current tool execution.
-    """
-
     agent: Agent[Any]
-    """
-    The agent that is executing the tool.
-    """
 
 
 @dataclass
 class ToolOutputGuardrailData(ToolInputGuardrailData):
-    """Input data passed to a tool output guardrail function.
-
-    Extends input data with the tool's output.
-    """
 
     output: Any
-    """
-    The output produced by the tool function.
-    """
 
 
 TContext_co = TypeVar("TContext_co", bound=Any, covariant=True)

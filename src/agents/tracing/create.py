@@ -102,23 +102,6 @@ def function_span(
     parent: Trace | Span[Any] | None = None,
     disabled: bool = False,
 ) -> Span[FunctionSpanData]:
-    """Create a new function span. The span will not be started automatically, you should either do
-    `with function_span() ...` or call `span.start()` + `span.finish()` manually.
-
-    Args:
-        name: The name of the function.
-        input: The input to the function.
-        output: The output of the function.
-        span_id: The ID of the span. Optional. If not provided, we will generate an ID. We
-            recommend using `util.gen_span_id()` to generate a span ID, to guarantee that IDs are
-            correctly formatted.
-        parent: The parent span or trace. If not provided, we will automatically use the current
-            trace/span as the parent.
-        disabled: If True, we will return a Span but the Span will not be recorded.
-
-    Returns:
-        The newly created function span.
-    """
     return get_trace_provider().create_span(
         span_data=FunctionSpanData(name=name, input=input, output=output),
         span_id=span_id,
