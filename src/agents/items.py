@@ -153,11 +153,8 @@ class MessageOutputItem(RunItemBase[ResponseOutputMessage]):
 
 @dataclass
 class HandoffCallItem(RunItemBase[ResponseFunctionToolCall]):
-    """Represents a tool call for a handoff from one agent to another."""
 
     raw_item: ResponseFunctionToolCall
-    """The raw response function tool call that represents the handoff."""
-
     type: Literal["handoff_call_item"] = "handoff_call_item"
 
 

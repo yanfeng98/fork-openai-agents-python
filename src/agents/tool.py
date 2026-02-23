@@ -392,13 +392,9 @@ class ComputerToolSafetyCheckData:
 
 @dataclass
 class MCPToolApprovalRequest:
-    """A request to approve a tool call."""
 
     ctx_wrapper: RunContextWrapper[Any]
-    """The run context."""
-
     data: McpApprovalRequest
-    """The data from the MCP tool approval request."""
 
 
 class MCPToolApprovalFunctionResult(TypedDict):
@@ -505,13 +501,9 @@ class ImageGenerationTool:
 
 @dataclass
 class LocalShellCommandRequest:
-    """A request to execute a command on a shell."""
 
     ctx_wrapper: RunContextWrapper[Any]
-    """The run context."""
-
     data: LocalShellCall
-    """The data from the local shell tool call."""
 
 
 LocalShellExecutor = Callable[[LocalShellCommandRequest], MaybeAwaitable[str]]
@@ -636,7 +628,6 @@ ShellToolEnvironment = Union[ShellToolLocalEnvironment, ShellToolHostedEnvironme
 
 @dataclass
 class ShellCallOutcome:
-    """Describes the terminal condition of a shell command."""
 
     type: Literal["exit", "timeout"]
     exit_code: int | None = None
@@ -644,7 +635,6 @@ class ShellCallOutcome:
 
 @dataclass
 class ShellCommandOutput:
-    """Structured output for a single shell command execution."""
 
     stdout: str = ""
     stderr: str = ""
@@ -689,7 +679,6 @@ class ShellCallData:
 
 @dataclass
 class ShellCommandRequest:
-    """A request to execute a modern shell call."""
 
     ctx_wrapper: RunContextWrapper[Any]
     data: ShellCallData

@@ -94,7 +94,6 @@ async def execute_mcp_approval_requests(
     approval_requests: list[ToolRunMCPApprovalRequest],
     context_wrapper: RunContextWrapper[Any],
 ) -> list[RunItem]:
-    """Run hosted MCP approval callbacks and return approval response items."""
 
     async def run_single_approval(approval_request: ToolRunMCPApprovalRequest) -> RunItem:
         callback = approval_request.mcp_tool.on_approval_request
@@ -288,7 +287,6 @@ def _collect_tool_interruptions(
     shell_results: Sequence[RunItem],
     apply_patch_results: Sequence[RunItem],
 ) -> list[ToolApprovalItem]:
-    """Collect tool approval interruptions from tool results."""
     interruptions: list[ToolApprovalItem] = []
     for result in function_results:
         if isinstance(result.run_item, ToolApprovalItem):
@@ -318,7 +316,6 @@ def _build_tool_result_items(
     apply_patch_results: Sequence[RunItem],
     local_shell_results: Sequence[RunItem] | None = None,
 ) -> list[RunItem]:
-    """Build ordered tool result items for inclusion in new step items."""
     results: list[RunItem] = []
     for result in function_results:
         run_item = getattr(result, "run_item", None)
@@ -335,7 +332,6 @@ def _build_tool_result_items(
 def _make_unique_item_appender(
     existing_items: Sequence[RunItem],
 ) -> tuple[list[RunItem], Callable[[RunItem], None]]:
-    """Return (items, append_fn) that skips duplicates by object identity."""
     existing_ids = {id(item) for item in existing_items}
     new_items: list[RunItem] = []
     new_item_ids: set[int] = set()
@@ -440,7 +436,6 @@ async def _append_mcp_callback_results(
     context_wrapper: RunContextWrapper[Any],
     append_item: Callable[[RunItem], None],
 ) -> None:
-    """Execute MCP approval callbacks and append results when present."""
     if not requests:
         return
     approval_results = await execute_mcp_approval_requests(

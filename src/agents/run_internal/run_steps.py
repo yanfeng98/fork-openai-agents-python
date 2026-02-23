@@ -153,36 +153,15 @@ class NextStepInterruption:
 @dataclass
 class SingleStepResult:
     original_input: str | list[TResponseInputItem]
-    """The input items i.e. the items before run() was called. May be mutated by handoff input
-    filters."""
-
     model_response: ModelResponse
-    """The model response for the current step."""
-
     pre_step_items: list[RunItem]
-    """Items generated before the current step."""
-
     new_step_items: list[RunItem]
-    """Items generated during this current step."""
-
     next_step: NextStepHandoff | NextStepFinalOutput | NextStepRunAgain | NextStepInterruption
-    """The next step to take."""
-
     tool_input_guardrail_results: list[ToolInputGuardrailResult]
-    """Tool input guardrail results from this step."""
-
     tool_output_guardrail_results: list[ToolOutputGuardrailResult]
-    """Tool output guardrail results from this step."""
-
     session_step_items: list[RunItem] | None = None
-    """Full unfiltered items for session history. When set, these are used instead of
-    new_step_items for session saving and generated_items property."""
-
     output_guardrail_results: list[OutputGuardrailResult] = dataclasses.field(default_factory=list)
-    """Output guardrail results (populated when a final output is produced)."""
-
     processed_response: ProcessedResponse | None = None
-    """The processed model response. This is needed for resuming from interruptions."""
 
     @property
     def generated_items(self) -> list[RunItem]:

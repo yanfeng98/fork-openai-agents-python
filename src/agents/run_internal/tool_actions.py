@@ -229,7 +229,6 @@ class LocalShellAction:
         context_wrapper: RunContextWrapper[Any],
         config: RunConfig,
     ) -> RunItem:
-        """Run a local shell tool call and wrap the result as a ToolCallOutputItem."""
         agent_hooks = agent.hooks
         await asyncio.gather(
             hooks.on_tool_start(context_wrapper, agent, call.local_shell_tool),
@@ -269,7 +268,6 @@ class LocalShellAction:
 
 
 class ShellAction:
-    """Execute shell calls, handling approvals and normalizing outputs."""
 
     @classmethod
     async def execute(
@@ -281,7 +279,6 @@ class ShellAction:
         context_wrapper: RunContextWrapper[Any],
         config: RunConfig,
     ) -> RunItem:
-        """Run a shell tool call and return a normalized ToolCallOutputItem."""
         shell_call = coerce_shell_call(call.tool_call)
         shell_tool = call.shell_tool
         agent_hooks = agent.hooks
@@ -451,7 +448,6 @@ class ShellAction:
 
 
 class ApplyPatchAction:
-    """Execute apply_patch operations with approvals and editor integration."""
 
     @classmethod
     async def execute(
@@ -463,7 +459,6 @@ class ApplyPatchAction:
         context_wrapper: RunContextWrapper[Any],
         config: RunConfig,
     ) -> RunItem:
-        """Run an apply_patch call and serialize the editor result for the model."""
         apply_patch_tool: ApplyPatchTool = call.apply_patch_tool
         agent_hooks = agent.hooks
         operation = coerce_apply_patch_operation(
@@ -533,7 +528,7 @@ class ApplyPatchAction:
                     result = editor.update_file(operation)
                 elif operation.type == "delete_file":
                     result = editor.delete_file(operation)
-                else:  # pragma: no cover - validated in coerce_apply_patch_operation
+                else:
                     raise ModelBehaviorError(f"Unsupported apply_patch operation: {operation.type}")
 
                 awaited = await result if inspect.isawaitable(result) else result

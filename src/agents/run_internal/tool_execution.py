@@ -252,7 +252,6 @@ def parse_apply_patch_function_args(arguments: str) -> dict[str, Any]:
 
 
 def extract_apply_patch_call_id(tool_call: Any) -> str:
-    """Ensure apply_patch calls include a call_id for approvals and tracing."""
     value = extract_tool_call_id(tool_call)
     if not value:
         raise ModelBehaviorError("Apply patch call is missing call_id.")
@@ -262,7 +261,6 @@ def extract_apply_patch_call_id(tool_call: Any) -> str:
 def coerce_apply_patch_operation(
     tool_call: Any, *, context_wrapper: RunContextWrapper[Any]
 ) -> ApplyPatchOperation:
-    """Normalize the tool payload into an ApplyPatchOperation the editor can consume."""
     raw_operation = get_mapping_or_attr(tool_call, "operation")
     if raw_operation is None:
         raise ModelBehaviorError("Apply patch call is missing an operation payload.")
@@ -326,7 +324,6 @@ def is_apply_patch_name(name: str | None, tool: ApplyPatchTool | None) -> bool:
 
 
 def normalize_shell_output(entry: ShellCommandOutput | Mapping[str, Any]) -> ShellCommandOutput:
-    """Normalize shell output into ShellCommandOutput so downstream code sees a stable shape."""
     if isinstance(entry, ShellCommandOutput):
         return entry
 
@@ -408,7 +405,6 @@ def resolve_exit_code(raw_exit_code: Any, outcome_status: str | None) -> int:
 
 
 def render_shell_outputs(outputs: Sequence[ShellCommandOutput]) -> str:
-    """Render shell outputs into human-readable text for tool responses."""
     if not outputs:
         return "(no output)"
 
@@ -443,7 +439,6 @@ def render_shell_outputs(outputs: Sequence[ShellCommandOutput]) -> str:
 def truncate_shell_outputs(
     outputs: Sequence[ShellCommandOutput], max_length: int
 ) -> list[ShellCommandOutput]:
-    """Truncate shell output streams to a maximum combined length."""
     if max_length <= 0:
         return [
             ShellCommandOutput(
@@ -483,7 +478,6 @@ def truncate_shell_outputs(
 def normalize_shell_output_entries(
     entries: Sequence[Mapping[str, Any]],
 ) -> list[dict[str, Any]]:
-    """Normalize raw shell output entries into the model-facing payload."""
     structured_output: list[dict[str, Any]] = []
     for entry in entries:
         sanitized = dict(entry)
@@ -516,7 +510,6 @@ def normalize_shell_output_entries(
 
 
 def normalize_max_output_length(value: int | None) -> int | None:
-    """Clamp negative max output lengths to zero while preserving None."""
     if value is None:
         return None
     return max(0, value)
@@ -689,7 +682,6 @@ def process_hosted_mcp_approvals(
     agent: Agent[Any],
     append_item: Callable[[RunItem], None],
 ) -> tuple[list[ToolApprovalItem], set[str]]:
-    """Filter hosted MCP outputs and merge manual approvals so only coherent items remain."""
     hosted_mcp_approvals_by_id: dict[str, ToolApprovalItem] = {}
     for item in original_pre_step_items:
         if not isinstance(item, ToolApprovalItem):
@@ -706,8 +698,6 @@ def process_hosted_mcp_approvals(
 
     for mcp_run in mcp_approval_requests:
         request_id = extract_mcp_request_id_from_run(mcp_run)
-        # MCP approval requests are documented to include an id used as approval_request_id.
-        # See https://platform.openai.com/docs/guides/tools-connectors-mcp#approvals
         approval_item = hosted_mcp_approvals_by_id.get(request_id) if request_id else None
         if not approval_item or not request_id:
             continue
@@ -806,7 +796,6 @@ def should_keep_hosted_mcp_item(
     pending_hosted_mcp_approvals: Sequence[ToolApprovalItem],
     pending_hosted_mcp_approval_ids: set[str],
 ) -> bool:
-    """Keep only hosted MCP approvals that match pending requests from the provider."""
     if not isinstance(item, ToolApprovalItem):
         return True
     if not _is_hosted_mcp_approval_request(item.raw_item):
@@ -1038,7 +1027,6 @@ async def execute_local_shell_calls(
     hooks: RunHooks[Any],
     config: RunConfig,
 ) -> list[RunItem]:
-    """Run local shell tool calls serially and wrap outputs."""
     from .tool_actions import LocalShellAction
 
     results: list[RunItem] = []
@@ -1087,7 +1075,6 @@ async def execute_apply_patch_calls(
     hooks: RunHooks[Any],
     config: RunConfig,
 ) -> list[RunItem]:
-    """Run apply_patch tool calls serially and normalize outputs."""
     from .tool_actions import ApplyPatchAction
 
     results: list[RunItem] = []
@@ -1356,7 +1343,6 @@ async def _execute_tool_output_guardrails(
 
 
 def _normalize_exit_code(value: Any) -> int | None:
-    """Convert arbitrary exit code types into an int if possible."""
     if value is None:
         return None
     try:
@@ -1366,7 +1352,6 @@ def _normalize_exit_code(value: Any) -> int | None:
 
 
 def _is_hosted_mcp_approval_request(raw_item: Any) -> bool:
-    """Detect hosted MCP approval request payloads emitted by the provider."""
     if isinstance(raw_item, McpApprovalRequest):
         return True
     if not isinstance(raw_item, dict):

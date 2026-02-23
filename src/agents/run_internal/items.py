@@ -229,7 +229,6 @@ def apply_patch_rejection_item(
 
 
 def extract_mcp_request_id(raw_item: Any) -> str | None:
-    """Pull the request id from hosted MCP approval payloads."""
     if isinstance(raw_item, dict):
         provider_data = raw_item.get("provider_data")
         if isinstance(provider_data, dict):
